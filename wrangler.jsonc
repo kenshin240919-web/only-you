@@ -28,9 +28,11 @@
       "bucket_name": "only-u-song-audio"
     }
   ],
-  // "on"일 때만 결제된 주문으로 ElevenLabs에 실제 생성을 요청한다(과금). API 키는 비밀 값 ELEVENLABS_API_KEY로 넣는다.
+  // MUSIC_GENERATION: "on"일 때만 결제된 주문으로 ElevenLabs에 실제 생성을 요청한다(과금). API 키는 비밀 값 ELEVENLABS_API_KEY로 넣는다.
   "vars": {
-    "MUSIC_GENERATION": "off"
+    "MUSIC_GENERATION": "off",
+    // "payapp"이면 페이앱으로 실제 결제를 받는다. 비밀 값 PAYAPP_USERID · PAYAPP_LINKKEY · PAYAPP_LINKVAL이 모두 있어야 켜진다.
+    "PAYMENT_MODE": "mock"
   },
   "observability": {
     "enabled": true

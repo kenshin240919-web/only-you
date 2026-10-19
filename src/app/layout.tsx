@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import Link from "next/link";
+import { BUSINESS } from "@/lib/business";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -47,7 +48,22 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <div className="container">
             <p className="footer-brand">Only U song · 온리유송</p>
             <p>AI로 가사와 음악을 만드는 맞춤 노래 선물 서비스입니다.</p>
-            <p className="muted">사업자 정보와 약관은 정식 출시 전에 게시됩니다.</p>
+            <p className="footer-links">
+              <Link href="/terms">이용약관</Link>
+              <Link href="/privacy">
+                <strong>개인정보처리방침</strong>
+              </Link>
+              <Link href="/refund">환불 정책</Link>
+            </p>
+            <p className="muted">
+              상호 {BUSINESS.name} · 대표자 {BUSINESS.owner} · 사업자등록번호 {BUSINESS.regNo}
+              <br />
+              통신판매업 신고: {BUSINESS.mailOrder}
+              <br />
+              주소 {BUSINESS.address}
+              <br />
+              전화 {BUSINESS.phone} · 이메일 {BUSINESS.email}
+            </p>
           </div>
         </footer>
       </body>

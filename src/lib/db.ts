@@ -71,6 +71,17 @@ const SONGS_SCHEMA = `CREATE TABLE IF NOT EXISTS songs (
   finished_at TEXT
 )`;
 
+// migrations/0003_payments.sql과 같은 스키마.
+const PAYMENTS_SCHEMA = `CREATE TABLE IF NOT EXISTS payments (
+  order_id TEXT PRIMARY KEY,
+  provider TEXT NOT NULL,
+  status TEXT NOT NULL,
+  amount INTEGER NOT NULL,
+  provider_ref TEXT,
+  created_at TEXT NOT NULL,
+  paid_at TEXT
+)`;
+
 // 생성 요청이 이 시간 안에 끝나지 않으면 작업이 중단된 것으로 본다.
 const STALE_MS = 10 * 60 * 1000;
 
@@ -79,7 +90,7 @@ let schemaReady: Promise<unknown> | null = null;
 export async function getDb(): Promise<D1Database> {
   const { env } = await getCloudflareContext({ async: true });
   if (!schemaReady) {
-    schemaReady = env.DB.batch([env.DB.prepare(SCHEMA), env.DB.prepare(SONGS_SCHEMA)]).catch((e) => {
+    schemaReady = env.DB.batch([env.DB.prepare(SCHEMA), env.DB.prepare(SONGS_SCHEMA), env.DB.prepare(PAYMENTS_SCHEMA)]).catch((e) => {
       schemaReady = null;
       throw e;
     });
@@ -105,6 +116,28 @@ export async function getOwnedOrder(id: string, ownerToken: string | null): Prom
   const row = await db.prepare("SELECT * FROM orders WHERE id = ?").bind(id).first<OrderRow>();
   if (!row) return null;
   return row.owner_token_hash === (await hashToken(ownerToken)) ? row : null;
+}
+
+export type PaymentStatus = "ready" | "paid" | "cancelled";
+
+export type PaymentRow = {
+  order_id: string;
+  provider: "payapp" | "mock";
+  status: PaymentStatus;
+  amount: number;
+  provider_ref: string | null;
+  created_at: string;
+  paid_at: string | null;
+};
+
+export async function getPayment(orderId: string): Promise<PaymentRow | null> {
+  const db = await getDb();
+  return db.prepare("SELECT * FROM payments WHERE order_id = ?").bind(orderId).first<PaymentRow>();
+}
+
+/** 결제 기록이 없는 주문은 payments 테이블 이전의 모의 결제 주문이라 결제된 것으로 본다. */
+export function paymentStatus(row: PaymentRow | null): PaymentStatus {
+  return row?.status ?? "paid";
 }
 
 export async function getSong(orderId: string): Promise<SongRow | null> {

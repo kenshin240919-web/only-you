@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getDb, getOwnedOrder, getSong, songView } from "@/lib/db";
+import { getDb, getOwnedOrder, getPayment, getSong, paymentStatus, songView } from "@/lib/db";
 
 type Ctx = { params: Promise<{ id: string }> };
 
@@ -17,6 +17,7 @@ export async function GET(req: Request, { params }: Ctx) {
     giftEnabled: row.gift_enabled === 1,
     draft: JSON.parse(row.draft_json),
     lyrics: JSON.parse(row.lyrics_json),
+    payment: paymentStatus(await getPayment(row.id)),
     song: songView(await getSong(row.id)),
   });
 }

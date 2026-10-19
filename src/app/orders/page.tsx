@@ -6,6 +6,7 @@ import EmptyState from "@/components/EmptyState";
 import { useOrder } from "@/components/useOrder";
 
 type SongStatus = "generating" | "ready" | "failed" | "disabled" | "none";
+type PaymentStatus = "ready" | "paid" | "cancelled";
 
 const STAGES = [
   { key: "paid", label: "결제 확인" },
@@ -16,10 +17,11 @@ const STAGES = [
 const POLL_MS = 3000;
 
 export default function OrdersPage() {
-  const [order] = useOrder();
+  const [order, setOrder] = useOrder();
+  const [payment, setPayment] = useState<PaymentStatus | null>(null);
   const [song, setSong] = useState<SongStatus | null>(null);
 
-  // 서버의 실제 제작 상태를 3초마다 확인한다. 완성·실패하면 멈춘다.
+  // 서버의 실제 결제·제작 상태를 3초마다 확인한다. 결제 대기 중이거나 만드는 중일 때만 계속 확인한다.
   useEffect(() => {
     if (!order?.orderId || !order.ownerToken) return;
     let stopped = false;
@@ -28,10 +30,11 @@ export default function OrdersPage() {
       try {
         const res = await fetch(`/api/orders/${order.orderId}`, { headers: { "x-owner-token": order.ownerToken ?? "" } });
         if (res.ok) {
-          const status = ((await res.json()) as { song: { status: SongStatus } }).song.status;
+          const data = (await res.json()) as { payment: PaymentStatus; song: { status: SongStatus } };
           if (stopped) return;
-          setSong(status);
-          if (status !== "generating") return;
+          setPayment(data.payment);
+          setSong(data.song.status);
+          if (data.payment === "cancelled" || (data.payment === "paid" && data.song.status !== "generating")) return;
         }
       } catch {}
       if (!stopped) timer = setTimeout(poll, POLL_MS);
@@ -44,8 +47,39 @@ export default function OrdersPage() {
   }, [order]);
 
   if (!order) return null;
-  if (!order.paidAt) {
+  if (!order.orderId) {
     return <EmptyState title="진행 중인 주문이 없어요" desc="노래를 만들어 볼까요?" href="/create" cta="노래 만들기" />;
+  }
+
+  // 결제를 마치지 못했거나 취소된 주문은 이 기기에서 지우고, 같은 이야기로 다시 주문한다.
+  const reorder = () => {
+    setOrder({ ...order, paidAt: null, orderNo: null, orderId: null, ownerToken: null, giftToken: null });
+    window.location.href = "/checkout";
+  };
+
+  if (payment === "ready" || payment === "cancelled") {
+    const cancelled = payment === "cancelled";
+    return (
+      <div className="container narrow" style={{ paddingBottom: 40 }}>
+        <div className="page-head">
+          <h1>{cancelled ? "결제가 취소됐어요" : "결제를 확인하고 있어요"}</h1>
+          <p>
+            주문번호 {order.orderNo} ·{" "}
+            {cancelled
+              ? "취소된 주문은 노래를 만들지 않아요."
+              : "결제를 마치셨다면 잠시 기다려 주세요. 확인되면 바로 노래를 만들기 시작해요."}
+          </p>
+        </div>
+        <div className="card stack" style={{ marginTop: 20 }}>
+          <p style={{ margin: 0 }}>
+            {cancelled ? "같은 이야기로 다시 주문할 수 있어요." : "결제 창을 닫았거나 결제를 마치지 못하셨다면 다시 결제해 주세요."}
+          </p>
+          <button type="button" className="btn btn-block" onClick={reorder}>
+            {cancelled ? "다시 주문하기" : "결제 다시 하기"}
+          </button>
+        </div>
+      </div>
+    );
   }
 
   const done = song === "ready";
@@ -57,7 +91,7 @@ export default function OrdersPage() {
       <div className="page-head">
         <h1>{done ? "노래가 완성됐어요!" : stopped ? "제작이 잠시 멈췄어요" : "노래를 만들고 있어요"}</h1>
         <p>
-          주문번호 {order.orderNo} · 이 창을 닫아도 제작은 계속되고, 완성된 노래는 '내 노래'에서 들을 수 있어요.
+          주문번호 {order.orderNo} · 이 창을 닫아도 제작은 계속되고, 완성된 노래는 &lsquo;내 노래&rsquo;에서 들을 수 있어요.
         </p>
       </div>
 
