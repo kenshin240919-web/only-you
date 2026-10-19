@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import EmptyState from "@/components/EmptyState";
 import { useOrder } from "@/components/useOrder";
-import { PRICE, callName, formatWon, genreLabel, reasonLabel, relationshipLabel } from "@/lib/draft";
+import { PRICE, callName, formatWon, genreLabel, reasonLabel, relationshipLabel, songTitle } from "@/lib/draft";
 import { VOCALS, labelOf } from "@/lib/options";
 
 export default function CheckoutPage() {
@@ -16,8 +16,12 @@ export default function CheckoutPage() {
   const [error, setError] = useState("");
 
   if (!order) return null;
-  if (!order.lyrics || !order.confirmedAt) {
-    return <EmptyState title="확정한 가사가 없어요" desc="가사를 확인하고 확정해 주세요." href="/draft" cta="가사 확인하기" />;
+  if (!order.draft.agreeRequired || !order.draft.email) {
+    return <EmptyState title="아직 쓴 이야기가 없어요" desc="이야기를 먼저 써 주세요." href="/create" cta="이야기 쓰기" />;
+  }
+  // 이미 결제한 주문을 다시 결제하면 노래가 한 번 더 만들어지므로(중복 과금) 막는다.
+  if (order.paidAt) {
+    return <EmptyState title="이미 결제한 주문이에요" desc="제작 상태를 확인해 주세요." href="/orders" cta="주문 상태 보기" />;
   }
 
   const d = order.draft;
@@ -30,7 +34,7 @@ export default function CheckoutPage() {
       const res = await fetch("/api/orders", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ draft: order.draft, lyrics: order.lyrics }),
+        body: JSON.stringify({ draft: order.draft }),
       });
       if (!res.ok) throw new Error(String(res.status));
       const saved = (await res.json()) as { id: string; ownerToken: string; giftToken: string; orderNo: string; paidAt: string };
@@ -53,17 +57,17 @@ export default function CheckoutPage() {
     <div className="container narrow" style={{ paddingBottom: 40 }}>
       <div className="page-head">
         <h1>주문 확인</h1>
-        <p>결제하면 확정한 가사로 노래 제작을 시작해요.</p>
+        <p>결제하면 입력한 이야기로 AI가 가사와 노래를 함께 만들어요.</p>
       </div>
 
       <div className="card stack" style={{ marginTop: 20 }}>
         <div>
-          <strong>{order.lyrics.title}</strong>
+          <strong>{songTitle(d)}</strong>
           <p className="muted" style={{ margin: "4px 0 0" }}>
             {relationshipLabel(d)}({callName(d)})에게 · {reasonLabel(d)} · {genreLabel(d)} · {labelOf(VOCALS, d.vocal)}
           </p>
-          <Link href="/draft" className="link-btn" style={{ display: "inline-block", marginTop: 6 }}>
-            가사 다시 보기
+          <Link href="/create" className="link-btn" style={{ display: "inline-block", marginTop: 6 }}>
+            이야기 고치기
           </Link>
         </div>
         <div>

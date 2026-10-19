@@ -19,4 +19,4 @@
 - A안 가사가 노래에서 몰리거나 뭉개진다는 고객 반응이 나오면 B안을 검토한다.
 - 사연에 없는 내용이 추가되는 것이 문제가 되면 B안을 검토한다.
 - 가사 미리보기를 다시 넣고 싶을 때도 B안이 필요하다. `/draft` 화면이 이 흐름을 위해 만들어져 있다.
-- 바꾸는 범위: 서버에 가사 생성 단계(Claude API)를 추가하고, 음악 호출을 `prompt`에서 `composition_plan`으로 바꾼다. B안 가사 예시와 구간 구성은 `tools/music-test/compare-lyrics.mjs`의 `lyricsB`, `cases.json`에 있다.
+- 바꾸는 범위: `src/lib/music.ts`의 `generate`에서 Claude API로 가사를 먼저 만들고, 음악 호출을 `prompt`에서 `composition_plan`으로 바꾼다. B안 가사 예시와 구간 구성은 `tools/music-test/compare-lyrics.mjs`의 `lyricsB`, `cases.json`에 있다.

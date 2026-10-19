@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { getDb, hashToken, randomToken } from "@/lib/db";
-import { parseDraft, parseLyrics } from "@/lib/validate";
+import { startSong } from "@/lib/music";
+import { songTitle } from "@/lib/draft";
+import { parseDraft } from "@/lib/validate";
 
 const MAX_BODY = 32 * 1024;
 
@@ -9,21 +11,22 @@ export async function POST(req: Request) {
   const text = await req.text();
   if (text.length > MAX_BODY) return NextResponse.json({ error: "too_large" }, { status: 413 });
 
-  let body: { draft?: unknown; lyrics?: unknown };
+  let body: { draft?: unknown };
   try {
     body = JSON.parse(text);
   } catch {
     return NextResponse.json({ error: "bad_json" }, { status: 400 });
   }
   const draft = parseDraft(body.draft);
-  const lyrics = parseLyrics(body.lyrics);
-  if (!draft || !lyrics) return NextResponse.json({ error: "invalid" }, { status: 400 });
+  if (!draft) return NextResponse.json({ error: "invalid" }, { status: 400 });
 
   const id = randomToken(16);
   const ownerToken = randomToken();
   const giftToken = randomToken();
   const now = new Date().toISOString();
   const orderNo = `OY-${Date.now().toString(36).toUpperCase()}`;
+  // 가사는 결제 후 ElevenLabs가 노래와 함께 쓴다. 완성 전까지는 제목만 있는 빈 가사를 둔다.
+  const lyrics = { title: songTitle(draft), sections: [] };
 
   const db = await getDb();
   await db
@@ -33,6 +36,7 @@ export async function POST(req: Request) {
     )
     .bind(id, await hashToken(ownerToken), giftToken, orderNo, draft.email.trim(), JSON.stringify(draft), JSON.stringify(lyrics), now, now)
     .run();
+  await startSong(id, draft, lyrics.title);
 
   return NextResponse.json({ id, ownerToken, giftToken, orderNo, paidAt: now }, { status: 201 });
 }

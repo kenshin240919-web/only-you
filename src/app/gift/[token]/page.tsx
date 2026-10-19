@@ -14,5 +14,5 @@ export default async function GiftPage({ params }: { params: Promise<{ token: st
   if (!gift) {
     return <EmptyState title="선물을 찾을 수 없어요" desc="링크가 꺼졌거나 잘못되었을 수 있어요." href="/" cta="Only U song 둘러보기" />;
   }
-  return <GiftReveal gift={gift} />;
+  return <GiftReveal gift={gift} token={token} />;
 }
