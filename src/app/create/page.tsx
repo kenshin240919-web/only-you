@@ -208,7 +208,7 @@ export default function CreatePage() {
                 />
                 {(d.name.trim() || d.nickname) && (
                   <div className="preview-line" aria-live="polite">
-                    ♪ “고마워요 {callName(d)}, 세상에 단 하나뿐인 {callName(d)}”
+                    ♪ 노래에서는 “{callName(d)}”(이)라고 불러요
                   </div>
                 )}
               </div>
@@ -400,7 +400,7 @@ export default function CreatePage() {
                 inputMode="email"
                 autoComplete="email"
                 value={d.email}
-                placeholder="노래 완성 소식을 받을 이메일"
+                placeholder="주문 관련 안내를 받을 이메일"
                 onChange={(e) => update({ email: e.target.value })}
               />
               {d.email && !EMAIL_RE.test(d.email.trim()) && (
@@ -426,7 +426,7 @@ export default function CreatePage() {
               />
               <span>(선택) 할인·이벤트 소식을 이메일로 받겠습니다.</span>
             </label>
-            <p className="notice">시제품에서는 이메일 인증 단계를 생략하고, 입력 내용은 이 기기에만 7일간 저장됩니다.</p>
+            <p className="notice">시제품에서는 이메일 인증 단계를 생략해요. 입력 내용은 결제 전까지 이 기기에만 7일간 저장되고, 결제하면 노래 제작을 위해 서버에 저장돼요.</p>
           </section>
         )}
 

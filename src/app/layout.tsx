@@ -4,7 +4,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Only U song — 단 한 사람을 위한 노래",
-  description: "소중한 사람의 이야기를 담아, 가사를 먼저 확인하고 만드는 맞춤 노래 선물.",
+  description: "소중한 사람의 이름과 추억을 담아 AI로 만드는 맞춤 노래 선물.",
 };
 
 export const viewport: Viewport = {

@@ -6,7 +6,7 @@ import { SAMPLES } from "@/lib/samples";
 const STEPS = [
   { title: "이야기 쓰기", desc: "8가지 질문에 답하면 돼요. 약 3~5분이면 충분해요." },
   { title: "주문하기", desc: "입력한 내용을 확인하고 결제해요." },
-  { title: "AI가 노래 제작", desc: "이야기로 가사와 노래를 함께 만들고, 완성되면 이메일로 알려 드려요." },
+  { title: "AI가 노래 제작", desc: "이야기로 가사와 노래를 함께 만들어요. 보통 1분 안에 완성돼요." },
   { title: "듣고 선물하기", desc: "MP3를 내려받고, 선물 링크로 마음을 전하세요." },
 ];
 
@@ -36,7 +36,7 @@ const FAQ = [
   },
   {
     q: "얼마나 걸리나요?",
-    a: "정확한 전달 시간은 시범 운영에서 측정한 뒤 안내할 예정입니다. 완성되면 이메일로 알려 드려요.",
+    a: "결제 후 보통 1분 안에 완성돼요. 완성된 노래는 '내 노래'에서 바로 듣고 내려받을 수 있어요.",
   },
   {
     q: "내 이야기는 안전한가요?",
@@ -48,7 +48,7 @@ export default function Home() {
   return (
     <>
       <section className="hero container">
-        <span className="eyebrow">가사를 먼저 보고 결정하세요</span>
+        <span className="eyebrow">이름과 추억으로 만드는 단 하나의 노래</span>
         <h1>
           세상에 단 한 사람,
           <br />
