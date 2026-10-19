@@ -1,33 +1,7 @@
 import Link from "next/link";
 import SamplePlayer from "@/components/SamplePlayer";
 import { PRICE, formatWon } from "@/lib/draft";
-
-const SAMPLES = [
-  {
-    title: "고마워요, 엄마",
-    tag: "부모님께 · 발라드 · 여성 보컬",
-    emoji: "🌷",
-    color: "#fde6df",
-    lines: ["새벽마다 켜져 있던 부엌 불빛", "엄마의 하루는 늘 나보다 빨랐죠"],
-    src: "/samples/mom.mp3",
-  },
-  {
-    title: "Only You, 지은",
-    tag: "연인에게 · 어쿠스틱 팝 · 남성 보컬",
-    emoji: "💗",
-    color: "#f3e3f7",
-    lines: ["비 오던 성수동 골목에서", "우산 하나에 둘이 걷던 밤"],
-    src: "/samples/jieun.mp3",
-  },
-  {
-    title: "괜찮아, 서준아",
-    tag: "자녀에게 · 밝은 팝 · 여성 보컬",
-    emoji: "⚽",
-    color: "#e0eefc",
-    lines: ["넘어져도 툭툭 털고 일어나는", "멋진 우리 서준"],
-    src: "/samples/seojun.mp3",
-  },
-];
+import { SAMPLES } from "@/lib/samples";
 
 const STEPS = [
   { title: "이야기 쓰기", desc: "8가지 질문에 답하면 돼요. 약 3~5분이면 충분해요." },
@@ -93,10 +67,15 @@ export default function Home() {
         <h2>이런 노래가 만들어져요</h2>
         <p className="section-lead">가상의 이름과 사연으로 만든 예시입니다.</p>
         <div className="grid-3">
-          {SAMPLES.map((s) => (
-            <SamplePlayer key={s.title} {...s} />
+          {SAMPLES.filter((s) => s.featured).map((s) => (
+            <SamplePlayer key={s.src} {...s} />
           ))}
         </div>
+        <p style={{ textAlign: "center", marginTop: 20 }}>
+          <Link href="/samples" className="btn-ghost">
+            예시 노래 {SAMPLES.length}곡 모두 듣기 →
+          </Link>
+        </p>
       </section>
 
       <section className="section container">

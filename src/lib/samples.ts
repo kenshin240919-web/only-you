@@ -1,0 +1,72 @@
+// 메인과 예시 노래 페이지에 쓰는 샘플. 모두 가상의 이름과 사연으로 ElevenLabs에서 만든 곡이다.
+export type Sample = { title: string; tag: string; emoji: string; color: string; lines: string[]; src: string; featured?: boolean };
+
+export const SAMPLES: Sample[] = [
+  {
+    title: "고마워요, 엄마",
+    tag: "부모님께 · 발라드 · 여성 보컬",
+    emoji: "🌷",
+    color: "#fde6df",
+    lines: ["새벽마다 켜져 있던 부엌 불빛", "엄마의 하루는 늘 나보다 빨랐죠"],
+    src: "/samples/mom.mp3",
+    featured: true,
+  },
+  {
+    title: "Only You, 지은",
+    tag: "연인에게 · 어쿠스틱 팝 · 남성 보컬",
+    emoji: "💗",
+    color: "#f3e3f7",
+    lines: ["비 오던 성수동 골목에서", "우산 하나에 둘이 걷던 밤"],
+    src: "/samples/jieun.mp3",
+    featured: true,
+  },
+  {
+    title: "괜찮아, 서준아",
+    tag: "자녀에게 · 밝은 팝 · 여성 보컬",
+    emoji: "⚽",
+    color: "#e0eefc",
+    lines: ["넘어져도 툭툭 털고 일어나는", "멋진 우리 서준"],
+    src: "/samples/seojun.mp3",
+    featured: true,
+  },
+  {
+    title: "고마워요, 순자 씨",
+    tag: "부모님께 · 발라드 · 여성 보컬",
+    emoji: "🍳",
+    color: "#fdeedd",
+    lines: ["새벽마다 켜져 있던 부엌 불빛", "순자 씨의 하루는 늘 나보다 빨랐죠"],
+    src: "/samples/sunja.mp3",
+  },
+  {
+    title: "괜찮아, 우리 아들",
+    tag: "자녀에게 · 밝은 팝 · 남성 보컬",
+    emoji: "🏃",
+    color: "#e2f2ea",
+    lines: ["괜찮아 우리 아들, 넌 잘하고 있어", "실수해도 다시 하면 돼"],
+    src: "/samples/son.mp3",
+  },
+  {
+    title: "아빠의 우산",
+    tag: "부모님께 · 어쿠스틱 발라드 · 여성 보컬",
+    emoji: "☂️",
+    color: "#e3e9f5",
+    lines: ["아빠, 오늘은 아빠의 예순 번째 봄이에요", "어릴 적 제 자전거 뒤에서 아빠가 손을 잡아 주던 날"],
+    src: "/samples/dad-umbrella.mp3",
+  },
+  {
+    title: "고마워요, 아빠",
+    tag: "부모님께 · 어쿠스틱 발라드 · 여성 보컬",
+    emoji: "🚲",
+    color: "#e8f0e0",
+    lines: ["비틀대던 내 자전거 뒤에서", "놓지 않았다고 웃던 아빠"],
+    src: "/samples/dad-thanks.mp3",
+  },
+  {
+    title: "엄마, 고마워요",
+    tag: "부모님께 · 발라드 · 여성 보컬",
+    emoji: "🌼",
+    color: "#fbf0d6",
+    lines: ["엄마, 김순자 그 이름을", "오늘 조용히 불러 봐요"],
+    src: "/samples/mom-health.mp3",
+  },
+];
