@@ -8,21 +8,24 @@ const SAMPLES = [
     tag: "부모님께 · 발라드 · 여성 보컬",
     emoji: "🌷",
     color: "#fde6df",
-    lines: ["새벽마다 켜 두던 부엌 불빛", "그게 사랑인 줄 이제 알았어요"],
+    lines: ["새벽마다 켜져 있던 부엌 불빛", "엄마의 하루는 늘 나보다 빨랐죠"],
+    src: "/samples/mom.mp3",
   },
   {
     title: "Only You, 지은",
-    tag: "연인에게 · 어쿠스틱 · 남성 보컬",
+    tag: "연인에게 · 어쿠스틱 팝 · 남성 보컬",
     emoji: "💗",
     color: "#f3e3f7",
     lines: ["비 오던 성수동 골목에서", "우산 하나에 둘이 걷던 밤"],
+    src: "/samples/jieun.mp3",
   },
   {
     title: "괜찮아, 서준아",
     tag: "자녀에게 · 밝은 팝 · 여성 보컬",
     emoji: "⚽",
     color: "#e0eefc",
-    lines: ["넘어져도 다시 일어나는 너", "언제나 엄마는 네 편이야"],
+    lines: ["넘어져도 툭툭 털고 일어나는", "멋진 우리 서준"],
+    src: "/samples/seojun.mp3",
   },
 ];
 

@@ -1,27 +1,35 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
-type Props = { title: string; tag: string; emoji: string; color: string; lines: string[] };
+type Props = { title: string; tag: string; emoji: string; color: string; lines: string[]; src: string };
 
-// 시제품에서는 실제 음원이 없으므로 재생 진행만 흉내 낸다.
-export default function SamplePlayer({ title, tag, emoji, color, lines }: Props) {
+// 한 번에 한 곡만 재생되도록 다른 샘플이 재생되면 멈춘다.
+const PLAY_EVENT = "sample-play";
+
+export default function SamplePlayer({ title, tag, emoji, color, lines, src }: Props) {
+  const audio = useRef<HTMLAudioElement>(null);
   const [playing, setPlaying] = useState(false);
   const [pos, setPos] = useState(0);
 
   useEffect(() => {
-    if (!playing) return;
-    const id = setInterval(() => {
-      setPos((p) => {
-        if (p >= 100) {
-          setPlaying(false);
-          return 0;
-        }
-        return p + 2;
-      });
-    }, 250);
-    return () => clearInterval(id);
-  }, [playing]);
+    const onOther = (e: Event) => {
+      if ((e as CustomEvent).detail !== src) audio.current?.pause();
+    };
+    window.addEventListener(PLAY_EVENT, onOther);
+    return () => window.removeEventListener(PLAY_EVENT, onOther);
+  }, [src]);
+
+  const toggle = () => {
+    const a = audio.current;
+    if (!a) return;
+    if (a.paused) {
+      window.dispatchEvent(new CustomEvent(PLAY_EVENT, { detail: src }));
+      void a.play();
+    } else {
+      a.pause();
+    }
+  };
 
   return (
     <article className="card sample">
@@ -40,11 +48,23 @@ export default function SamplePlayer({ title, tag, emoji, color, lines }: Props)
           </span>
         ))}
       </p>
+      <audio
+        ref={audio}
+        src={src}
+        preload="none"
+        onPlay={() => setPlaying(true)}
+        onPause={() => setPlaying(false)}
+        onEnded={() => setPos(0)}
+        onTimeUpdate={(e) => {
+          const a = e.currentTarget;
+          if (a.duration) setPos((a.currentTime / a.duration) * 100);
+        }}
+      />
       <div className="play-row">
         <button
           type="button"
           className="play-btn"
-          onClick={() => setPlaying((v) => !v)}
+          onClick={toggle}
           aria-label={playing ? `${title} 일시정지` : `${title} 재생`}
         >
           {playing ? "❚❚" : "▶"}
@@ -53,7 +73,6 @@ export default function SamplePlayer({ title, tag, emoji, color, lines }: Props)
           <span style={{ width: `${pos}%` }} />
         </div>
       </div>
-      <small className="muted">시제품: 샘플 음원은 품질 시험 후 공개됩니다</small>
     </article>
   );
 }
