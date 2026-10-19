@@ -5,15 +5,23 @@
 
 | 곡 | 이름·호칭 발음 | 가사 정확도(누락·바뀜) | 한국어 자연스러움 | 장르 적합 | 보컬 선호 반영 | 끊김·잡음 | 실제 길이 | 생성 시간 | 메모 |
 |---|---|---|---|---|---|---|---|---|---|
-| parents-female-name | | | | | | | | | |
-| parents-female-nickname | | | | | | | | | |
-| parents-male-name | | | | | | | | | |
-| parents-male-nickname | | | | | | | | | |
-| couple-female-name | | | | | | | | | |
-| couple-female-nickname | | | | | | | | | |
-| couple-male-name | | | | | | | | | |
-| couple-male-nickname | | | | | | | | | |
-| kids-female-name | | | | | | | | | |
-| kids-female-nickname | | | | | | | | | |
-| kids-male-name | | | | | | | | | |
-| kids-male-nickname | | | | | | | | | |
+| parents-female-name | | | | | | | 1:30 | 6.1s | --free 90초(1절+후렴), 청취 평가: 아주 좋음 |
+| parents-female-nickname | | | | | | | 1:30 | 5.9s | --free 90초(1절+후렴), 청취 평가: 아주 좋음 |
+| parents-male-name | | | | | | | | | 생략 |
+| parents-male-nickname | | | | | | | | | 생략 |
+| couple-female-name | | | | | | | | | 생략 |
+| couple-female-nickname | | | | | | | | | 생략 |
+| couple-male-name | | | | | | | 2:30 | 10.8s | 청취 평가: 아주 좋음 |
+| couple-male-nickname | | | | | | | | | 생략 |
+| kids-female-name | | | | | | | 2:30 | 9.8s | 청취 평가: 아주 좋음 |
+| kids-female-nickname | | | | | | | | | 생략 |
+| kids-male-name | | | | | | | | | 생략 |
+| kids-male-nickname | | | | | | | 2:30 | 11.0s | 청취 평가: 아주 좋음 |
+
+## 2026-10-19 시험 기록
+
+- 모델 `music_v2_5`, ElevenLabs Starter 플랜. 무료 플랜에서는 402 `paid_plan_required`로 음악 API가 거부됨.
+- 5곡 생성, 오류 0건. 모두 요청한 길이대로 나왔고 무음 구간 없음(ffprobe·volumedetect 확인).
+- 사용량 총 10.5분(90초 2곡 + 2분 30초 3곡).
+- 확인 범위: 부모님·커플·자녀 3개 상황, 여성·남성 보컬, 이름·호칭, 90초·2분 30초 길이.
+- 결정: 5곡 청취 결과가 아주 좋아 나머지 7곡은 생략. 점수 칸은 비워 둠(곡별 점수 미기록).

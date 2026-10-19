@@ -85,7 +85,9 @@ for (const c of cases) {
     if (!res.ok) {
       const detail = await res.text();
       console.log(`실패 ${res.status} (${seconds}s)`);
+      console.log(`  ${detail}`);
       results.push({ id: c.id, ok: false, status: res.status, detail, seconds });
+      await writeFile(join(outDir, `results-${MODEL}.json`), JSON.stringify(results, null, 2));
       // 시간 초과·서버 오류 뒤 자동 재시도는 중복 과금 위험이 있어 하지 않는다.
       continue;
     }
