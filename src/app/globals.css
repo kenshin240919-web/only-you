@@ -930,3 +930,162 @@ textarea {
   flex-wrap: wrap;
   gap: 4px 16px;
 }
+
+/* Home poster */
+.poster {
+  position: relative;
+  overflow: hidden;
+  border-radius: 24px;
+  padding: 40px 28px;
+  text-align: center;
+  color: #fff;
+  background:
+    radial-gradient(circle at 85% 15%, rgba(255, 255, 255, 0.18), transparent 40%),
+    linear-gradient(140deg, var(--accent-dark), var(--accent) 55%, #f29a7a);
+  box-shadow: var(--shadow);
+}
+
+.poster-kicker {
+  margin: 0;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  opacity: 0.9;
+}
+
+.poster-big {
+  margin: 4px 0 8px;
+  font-size: clamp(38px, 10vw, 64px);
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 1.1;
+}
+
+.poster-num {
+  font-size: 1.5em;
+}
+
+.poster-sub {
+  margin: 0 auto 24px;
+  max-width: 440px;
+  opacity: 0.92;
+}
+
+.poster-facts {
+  list-style: none;
+  padding: 0;
+  margin: 0 auto 28px;
+  max-width: 640px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 10px;
+}
+
+.poster-facts li {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 14px 12px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.poster-facts strong {
+  font-size: 22px;
+}
+
+.poster-facts span {
+  font-size: 14px;
+  opacity: 0.9;
+}
+
+.poster .btn {
+  background: #fff;
+  color: var(--accent-dark);
+}
+
+/* Pricing */
+.plans {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+  max-width: 760px;
+  margin: 0 auto;
+}
+
+.plan {
+  position: relative;
+  text-align: center;
+}
+
+.plan h3 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.plan .check-list {
+  text-align: left;
+}
+
+.plan-best {
+  border: 2px solid var(--accent);
+}
+
+.plan-badge {
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 2px 12px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.plan-save {
+  margin: 0;
+  font-size: 14px;
+}
+
+.addons-table {
+  max-width: 760px;
+  margin: 16px auto 0;
+}
+
+.addons-table h3 {
+  margin: 0 0 4px;
+  font-size: 16px;
+}
+
+/* Checkout and songs */
+.addon-row {
+  margin: 8px 0;
+}
+
+.bundle-note {
+  color: var(--accent-dark);
+  font-weight: 700;
+}
+
+.revise-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+.lyrics-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
+}
+
+.lyrics-card canvas {
+  width: 100%;
+  max-width: 320px;
+  height: auto;
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+}

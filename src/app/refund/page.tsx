@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { BUSINESS } from "@/lib/business";
-import { PRICE, formatWon } from "@/lib/draft";
+import { ADDON_PAIR, PAID_REVISIONS, PRICES, formatWon } from "@/lib/pricing";
 
 export const metadata: Metadata = { title: "환불 정책 · Only U song" };
 
@@ -13,10 +13,17 @@ export default function RefundPage() {
 
       <h2>1. 상품</h2>
       <p>
-        Only U song(이하 &ldquo;서비스&rdquo;)의 상품은 이용자가 입력한 이야기로 AI가 가사와 노래를 만들어 제공하는 맞춤
-        노래 1곡(약 2분 30초 목표, MP3 다운로드와 선물 페이지 링크 포함)이며, 가격은 {formatWon(PRICE)}(부가가치세
-        포함)입니다. 노래는 이용자 한 사람의 주문에 따라 개별적으로 만들어지는 디지털 콘텐츠입니다.
+        Only U song(이하 &ldquo;서비스&rdquo;)의 상품은 아래와 같으며, 모두 이용자 한 사람의 주문에 따라 개별적으로
+        만들어지는 디지털 콘텐츠입니다. 가격은 부가가치세 포함입니다.
       </p>
+      <ul>
+        <li>맞춤 노래 1곡(약 2분 30초 목표, 무제한 듣기·가사 보기·선물 페이지 링크·수정 1회 포함): {formatWon(PRICES.song)}</li>
+        <li>MP3 다운로드: {formatWon(PRICES.mp3)}</li>
+        <li>가사 카드(선물용 이미지): {formatWon(PRICES.card)}</li>
+        <li>MP3 + 가사 카드를 함께 살 때: {formatWon(ADDON_PAIR)}</li>
+        <li>올인원(노래 + MP3 + 가사 카드): {formatWon(PRICES.bundle)}</li>
+        <li>추가 수정(무료 1회 이후 최대 {PAID_REVISIONS}회): 회당 {formatWon(PRICES.revision)}</li>
+      </ul>
 
       <h2>2. 청약철회</h2>
       <ol>
@@ -34,13 +41,18 @@ export default function RefundPage() {
         </li>
       </ol>
 
-      <h2>3. 재제작</h2>
+      <h2>3. 수정과 재제작</h2>
       <ol>
         <li>
-          받는 분의 이름·호칭이 틀렸거나 입력한 추억이 빠지는 등 원래 주문 내용과 다르게 만들어진 경우, 1회 무료로 다시
-          만들어 드립니다. 재제작을 원하지 않으면 위 2-③에 따라 환불을 받을 수 있습니다.
+          수정: 같은 이야기 안에서 가사 표현·장르·보컬을 바꿔 다시 만들 수 있습니다. 첫 1회는 무료이고, 이후 최대{" "}
+          {PAID_REVISIONS}회까지 회당 {formatWon(PRICES.revision)}입니다. 수정본은 결제(무료 수정은 요청) 직후 만들어
+          제공되므로, 제공된 뒤에는 위 2-②에 따라 청약철회가 제한됩니다.
         </li>
-        <li>새로운 사연이나 다른 장르·보컬로 바꾸는 것은 재제작이 아니라 새 주문입니다.</li>
+        <li>
+          재제작: 받는 분의 이름·호칭이 틀렸거나 입력한 추억이 빠지는 등 원래 주문 내용과 다르게 만들어진 경우에는 수정
+          횟수와 관계없이 무료로 다시 만들어 드립니다. 재제작을 원하지 않으면 위 2-③에 따라 환불을 받을 수 있습니다.
+        </li>
+        <li>사연 자체를 바꾸는 것은 수정이 아니라 새 주문입니다.</li>
       </ol>
 
       <h2>4. 노래를 받지 못한 경우</h2>
@@ -60,7 +72,7 @@ export default function RefundPage() {
         <li>아래 이메일 또는 전화로 주문번호, 주문할 때 입력한 이메일, 결제일, 환불 사유를 알려 주세요.</li>
         <li>확인 후 3영업일 이내에 처리하며, 결제한 수단(카드 결제 취소 등)으로 환불합니다. 결제 수단으로 환불할 수 없는 경우 본인 명의 계좌로 환불합니다.</li>
         <li>카드 결제 취소는 카드사 사정에 따라 실제 반영까지 며칠이 더 걸릴 수 있습니다.</li>
-        <li>결제가 취소·환불되면 그 주문의 선물 링크는 더 이상 열리지 않습니다.</li>
+        <li>노래 결제가 취소·환불되면 그 주문의 선물 링크는 더 이상 열리지 않습니다. MP3·가사 카드·수정 결제는 건별로 취소할 수 있습니다.</li>
       </ol>
 
       <h2>7. 부정 이용</h2>

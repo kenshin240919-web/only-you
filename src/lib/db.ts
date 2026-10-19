@@ -1,6 +1,7 @@
 import "server-only";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { type Draft, type Lyrics, callName, genreLabel } from "./draft";
+import type { Item } from "./pricing";
 
 export type OrderRow = {
   id: string;
@@ -32,6 +33,8 @@ export type SongView = {
   status: SongRow["status"] | "none";
   title: string | null;
   lyrics: Lyrics | null;
+  /** 완성 시각. 수정본이 나오면 바뀌므로 화면이 음원을 다시 받는 기준으로 쓴다. */
+  version: string | null;
 };
 
 /** 받는 사람에게 보여 줘도 되는 정보만 담는다. 이메일·원래 사연은 넣지 않는다. */
@@ -71,16 +74,31 @@ const SONGS_SCHEMA = `CREATE TABLE IF NOT EXISTS songs (
   finished_at TEXT
 )`;
 
-// migrations/0003_payments.sql과 같은 스키마.
-const PAYMENTS_SCHEMA = `CREATE TABLE IF NOT EXISTS payments (
-  order_id TEXT PRIMARY KEY,
-  provider TEXT NOT NULL,
-  status TEXT NOT NULL,
-  amount INTEGER NOT NULL,
-  provider_ref TEXT,
-  created_at TEXT NOT NULL,
-  paid_at TEXT
-)`;
+// migrations/0004_purchases.sql과 같은 스키마. (0003의 payments 테이블은 더 쓰지 않는다)
+const PURCHASES_SCHEMA = [
+  `CREATE TABLE IF NOT EXISTS purchases (
+    id TEXT PRIMARY KEY,
+    order_id TEXT NOT NULL,
+    items TEXT NOT NULL,
+    amount INTEGER NOT NULL,
+    provider TEXT NOT NULL,
+    status TEXT NOT NULL,
+    provider_ref TEXT,
+    created_at TEXT NOT NULL,
+    paid_at TEXT
+  )`,
+  "CREATE INDEX IF NOT EXISTS purchases_order ON purchases(order_id)",
+  `CREATE TABLE IF NOT EXISTS revisions (
+    id TEXT PRIMARY KEY,
+    order_id TEXT NOT NULL,
+    paid INTEGER NOT NULL,
+    purchase_id TEXT,
+    request_json TEXT NOT NULL,
+    status TEXT NOT NULL,
+    created_at TEXT NOT NULL
+  )`,
+  "CREATE INDEX IF NOT EXISTS revisions_order ON revisions(order_id)",
+];
 
 // 생성 요청이 이 시간 안에 끝나지 않으면 작업이 중단된 것으로 본다.
 const STALE_MS = 10 * 60 * 1000;
@@ -90,7 +108,7 @@ let schemaReady: Promise<unknown> | null = null;
 export async function getDb(): Promise<D1Database> {
   const { env } = await getCloudflareContext({ async: true });
   if (!schemaReady) {
-    schemaReady = env.DB.batch([env.DB.prepare(SCHEMA), env.DB.prepare(SONGS_SCHEMA), env.DB.prepare(PAYMENTS_SCHEMA)]).catch((e) => {
+    schemaReady = env.DB.batch([SCHEMA, SONGS_SCHEMA, ...PURCHASES_SCHEMA].map((q) => env.DB.prepare(q))).catch((e) => {
       schemaReady = null;
       throw e;
     });
@@ -120,24 +138,49 @@ export async function getOwnedOrder(id: string, ownerToken: string | null): Prom
 
 export type PaymentStatus = "ready" | "paid" | "cancelled";
 
-export type PaymentRow = {
+export type PurchaseRow = {
+  id: string;
   order_id: string;
+  items: string;
+  amount: number;
   provider: "payapp" | "mock";
   status: PaymentStatus;
-  amount: number;
   provider_ref: string | null;
   created_at: string;
   paid_at: string | null;
 };
 
-export async function getPayment(orderId: string): Promise<PaymentRow | null> {
+export type RevisionRow = {
+  id: string;
+  order_id: string;
+  paid: number;
+  purchase_id: string | null;
+  request_json: string;
+  status: "awaiting_payment" | "started" | "cancelled";
+  created_at: string;
+};
+
+export async function getPurchases(orderId: string): Promise<PurchaseRow[]> {
   const db = await getDb();
-  return db.prepare("SELECT * FROM payments WHERE order_id = ?").bind(orderId).first<PaymentRow>();
+  const { results } = await db.prepare("SELECT * FROM purchases WHERE order_id = ? ORDER BY created_at").bind(orderId).all<PurchaseRow>();
+  return results;
 }
 
-/** 결제 기록이 없는 주문은 payments 테이블 이전의 모의 결제 주문이라 결제된 것으로 본다. */
-export function paymentStatus(row: PaymentRow | null): PaymentStatus {
-  return row?.status ?? "paid";
+export async function getRevisions(orderId: string): Promise<RevisionRow[]> {
+  const db = await getDb();
+  const { results } = await db.prepare("SELECT * FROM revisions WHERE order_id = ? ORDER BY created_at").bind(orderId).all<RevisionRow>();
+  return results;
+}
+
+export const purchaseItems = (p: PurchaseRow) => JSON.parse(p.items) as Item[];
+
+/** 처음 주문(노래)의 결제 상태와 결제가 끝난 상품 목록. 결제 기록이 없는 시제품 주문은 모두 가진 것으로 본다. */
+export function ownership(purchases: PurchaseRow[]): { payment: PaymentStatus; owned: Item[] } {
+  if (!purchases.length) return { payment: "paid", owned: ["song", "mp3", "card"] };
+  const first = purchases.find((p) => purchaseItems(p).includes("song"));
+  const owned = new Set<Item>();
+  for (const p of purchases) if (p.status === "paid") for (const i of purchaseItems(p)) if (i !== "revision") owned.add(i);
+  return { payment: first?.status ?? "paid", owned: [...owned] };
 }
 
 export async function getSong(orderId: string): Promise<SongRow | null> {
@@ -146,12 +189,13 @@ export async function getSong(orderId: string): Promise<SongRow | null> {
 }
 
 export function songView(row: SongRow | null): SongView {
-  if (!row) return { status: "none", title: null, lyrics: null };
+  if (!row) return { status: "none", title: null, lyrics: null, version: null };
   const stale = row.status === "generating" && Date.now() - new Date(row.started_at).getTime() > STALE_MS;
   return {
     status: stale ? "failed" : row.status,
     title: row.title,
     lyrics: row.lyrics_json ? (JSON.parse(row.lyrics_json) as Lyrics) : null,
+    version: row.finished_at,
   };
 }
 

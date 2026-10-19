@@ -7,7 +7,7 @@ export function payappEnabled(env: CloudflareEnv): boolean {
   return (env.PAYMENT_MODE as string) === "payapp" && Boolean(env.PAYAPP_USERID && env.PAYAPP_LINKKEY && env.PAYAPP_LINKVAL);
 }
 
-export type PayRequest = { orderId: string; amount: number; goodname: string; phone: string; origin: string };
+export type PayRequest = { purchaseId: string; amount: number; goodname: string; phone: string; origin: string; back: "orders" | "songs" };
 
 export async function requestPayment(env: CloudflareEnv, p: PayRequest): Promise<{ payurl: string; mulNo: string } | null> {
   const res = await fetch("https://api.payapp.kr/oapi/apiLoad.html", {
@@ -21,9 +21,9 @@ export async function requestPayment(env: CloudflareEnv, p: PayRequest): Promise
       recvphone: p.phone,
       smsuse: "n",
       feedbackurl: `${p.origin}/api/payapp/feedback`,
-      var1: p.orderId,
+      var1: p.purchaseId,
       // 페이앱은 returnurl을 POST로 열어서, 받아서 주문 상태 화면으로 GET 이동시키는 라우트를 둔다.
-      returnurl: `${p.origin}/api/payapp/return`,
+      returnurl: `${p.origin}/api/payapp/return?to=${p.back}`,
       redirectpay: "1",
       skip_cstpage: "y",
       checkretry: "y",

@@ -65,9 +65,9 @@ npm run deploy    # 직접 배포 (wrangler 로그인 필요)
 
 saju.guidejung.com과 같은 페이앱 판매자 계정·방식으로 건별 결제를 받습니다. 코드는 `src/lib/payapp.ts`, `src/app/api/payapp/`입니다.
 
-- 결제 화면에서 휴대폰 번호(페이앱 필수값, 저장하지 않음)를 받아 결제 대기 주문을 만들고 페이앱 결제창으로 보냅니다. 금액은 서버(`PRICE`)가 정합니다.
+- 결제 화면에서 휴대폰 번호(페이앱 필수값, 저장하지 않음)를 받아 결제 대기 주문을 만들고 페이앱 결제창으로 보냅니다. 금액은 서버(`src/lib/pricing.ts`)가 정합니다.
+- 주문 하나에 여러 번 결제합니다(처음 주문, MP3·가사 카드 추가, 유료 수정). 결제 기록은 D1 `purchases`, 수정 요청은 `revisions` 테이블(`migrations/0004_purchases.sql`)에 남습니다. 가격 정책은 `docs/DECISIONS.md`.
 - 결제 완료는 페이앱 알림(`/api/payapp/feedback`)이 판매자 연동값·결제요청번호·금액이 모두 맞을 때만 인정하고, 그때 노래 제작을 시작합니다. 취소·환불 알림이 오면 결제를 취소 상태로 바꾸고 선물 링크를 끕니다.
-- 결제 상태는 D1 `payments` 테이블(`migrations/0003_payments.sql`)에 남습니다.
 - **기본은 모의 결제입니다.** 켜려면:
   1. 페이앱 판매자 사이트 → 설정 → 연동 정보의 아이디·연동 KEY·연동 VALUE를 Worker 비밀 값으로 등록: `PAYAPP_USERID`, `PAYAPP_LINKKEY`, `PAYAPP_LINKVAL` (대시보드 → Worker → Settings → Variables and Secrets)
   2. `wrangler.jsonc`의 `vars.PAYMENT_MODE`를 `"payapp"`으로 바꿔 배포

@@ -2,27 +2,30 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import EmptyState from "@/components/EmptyState";
+import PhoneField, { isPhone } from "@/components/PhoneField";
+import { usePaymentProvider } from "@/components/usePaymentProvider";
 import { useOrder } from "@/components/useOrder";
-import { PRICE, callName, formatWon, genreLabel, reasonLabel, relationshipLabel, songTitle } from "@/lib/draft";
+import { callName, genreLabel, reasonLabel, relationshipLabel, songTitle } from "@/lib/draft";
 import { VOCALS, labelOf } from "@/lib/options";
+import { type Item, PRICES, formatWon, priceOf } from "@/lib/pricing";
+
+const ADDONS: { item: "mp3" | "card"; label: string; desc: string }[] = [
+  { item: "mp3", label: "MP3 다운로드", desc: "휴대폰·컴퓨터에 저장해 언제든 들어요" },
+  { item: "card", label: "가사 카드", desc: "가사를 예쁘게 담은 선물용 이미지" },
+];
 
 export default function CheckoutPage() {
   const router = useRouter();
   const [order, setOrder] = useOrder();
+  const provider = usePaymentProvider();
+  // 올인원(노래 + MP3 + 가사 카드)을 기본으로 고른다.
+  const [addons, setAddons] = useState<("mp3" | "card")[]>(["mp3", "card"]);
   const [agree, setAgree] = useState(false);
   const [paying, setPaying] = useState(false);
   const [error, setError] = useState("");
-  const [provider, setProvider] = useState<"payapp" | "mock" | null>(null);
   const [phone, setPhone] = useState("");
-
-  useEffect(() => {
-    fetch("/api/payment")
-      .then((r) => r.json() as Promise<{ provider: "payapp" | "mock" }>)
-      .then((r) => setProvider(r.provider))
-      .catch(() => setProvider("mock"));
-  }, []);
 
   if (!order) return null;
   if (!order.draft.agreeRequired || !order.draft.email) {
@@ -35,8 +38,10 @@ export default function CheckoutPage() {
   }
 
   const d = order.draft;
-  const digits = phone.replace(/\D/g, "");
-  const phoneOk = /^01\d{8,9}$/.test(digits);
+  const items: Item[] = ["song", ...addons];
+  const total = priceOf(items);
+  const allInOne = addons.length === 2;
+  const toggle = (a: "mp3" | "card") => setAddons((cur) => (cur.includes(a) ? cur.filter((x) => x !== a) : [...cur, a]));
 
   const pay = async () => {
     // 페이앱이면 서버가 결제 대기 주문과 결제창 주소를 만들고, 결제 완료는 페이앱 알림으로 서버가 확인한다.
@@ -46,7 +51,7 @@ export default function CheckoutPage() {
       const res = await fetch("/api/orders", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ draft: order.draft, phone: digits }),
+        body: JSON.stringify({ draft: order.draft, addons, phone }),
       });
       if (!res.ok) throw new Error(String(res.status));
       const saved = (await res.json()) as {
@@ -55,7 +60,7 @@ export default function CheckoutPage() {
         giftToken: string;
         orderNo: string;
         paidAt: string | null;
-        payurl?: string;
+        payurl: string | null;
       };
       setOrder({
         ...order,
@@ -77,7 +82,7 @@ export default function CheckoutPage() {
     <div className="container narrow" style={{ paddingBottom: 40 }}>
       <div className="page-head">
         <h1>주문 확인</h1>
-        <p>결제하면 입력한 이야기로 AI가 가사와 노래를 함께 만들어요.</p>
+        <p>결제하면 입력한 이야기로 AI가 가사와 노래를 함께 만들어요. 보통 1분 안에 완성돼요.</p>
       </div>
 
       <div className="card stack" style={{ marginTop: 20 }}>
@@ -90,27 +95,47 @@ export default function CheckoutPage() {
             이야기 고치기
           </Link>
         </div>
+
         <div>
           <div className="row-between">
-            <span>맞춤 노래 1곡 (약 2분 30초 목표)</span>
-            <span>{formatWon(PRICE)}</span>
+            <span>
+              <strong>맞춤 노래 1곡</strong>
+              <br />
+              <small className="muted">약 2분 30초 · 무제한 듣기 · 가사 보기 · 선물 링크 · 무료 수정 1회</small>
+            </span>
+            <span>{formatWon(PRICES.song)}</span>
           </div>
-          <div className="row-between muted">
-            <span>MP3 다운로드</span>
-            <span>포함</span>
-          </div>
-          <div className="row-between muted">
-            <span>선물 페이지 링크</span>
-            <span>포함</span>
-          </div>
-          <div className="row-between muted">
-            <span>원주문 범위 재제작 1회</span>
-            <span>포함</span>
-          </div>
+          <p className="muted" style={{ margin: "14px 0 6px", fontSize: 14 }}>
+            함께 받을 것을 고르세요
+          </p>
+          {ADDONS.map((a) => (
+            <label key={a.item} className="checkbox addon-row">
+              <input id={`addon-${a.item}`} type="checkbox" checked={addons.includes(a.item)} onChange={() => toggle(a.item)} />
+              <span className="row-between" style={{ flex: 1, padding: 0 }}>
+                <span>
+                  {a.label}
+                  <br />
+                  <small className="muted">{a.desc}</small>
+                </span>
+                <span>+{formatWon(PRICES[a.item])}</span>
+              </span>
+            </label>
+          ))}
+          {allInOne && (
+            <div className="row-between bundle-note">
+              <span>올인원 할인</span>
+              <span>-{formatWon(PRICES.song + PRICES.mp3 + PRICES.card - PRICES.bundle)}</span>
+            </div>
+          )}
           <div className="row-between total">
-            <span>최종 결제금액</span>
-            <span>{formatWon(PRICE)}</span>
+            <span>{allInOne ? "올인원 결제금액" : "최종 결제금액"}</span>
+            <span>{formatWon(total)}</span>
           </div>
+          {!allInOne && (
+            <p className="muted" style={{ margin: "8px 0 0", fontSize: 13 }}>
+              MP3와 가사 카드는 노래를 들어 본 뒤 &lsquo;내 노래&rsquo;에서도 살 수 있어요.
+            </p>
+          )}
         </div>
       </div>
 
@@ -123,22 +148,9 @@ export default function CheckoutPage() {
       </label>
 
       {provider === "payapp" && (
-        <label className="field" style={{ marginTop: 16 }}>
-          <span className="field-label">
-            휴대폰 번호<span className="req">필수</span>
-          </span>
-          <input
-            id="phone"
-            className="input"
-            type="tel"
-            inputMode="numeric"
-            autoComplete="tel"
-            value={phone}
-            placeholder="01012345678"
-            onChange={(e) => setPhone(e.target.value)}
-          />
-          <span className="field-meta">결제대행사(페이앱)의 결제 확인에만 쓰고 저장하지 않아요.</span>
-        </label>
+        <div style={{ marginTop: 16 }}>
+          <PhoneField id="phone" value={phone} onChange={setPhone} />
+        </div>
       )}
       {provider === "mock" && (
         <div className="notice">시제품이라 실제 결제는 이루어지지 않습니다. 버튼을 누르면 결제가 완료된 것처럼 진행돼요.</div>
@@ -152,10 +164,10 @@ export default function CheckoutPage() {
       <button
         type="button"
         className="btn btn-block"
-        disabled={!agree || paying || !provider || (provider === "payapp" && !phoneOk)}
+        disabled={!agree || paying || !provider || (provider === "payapp" && !isPhone(phone))}
         onClick={pay}
       >
-        {paying ? "결제 준비 중…" : `${formatWon(PRICE)} 결제하고 제작 시작`}
+        {paying ? "결제 준비 중…" : `${formatWon(total)} 결제하고 제작 시작`}
       </button>
     </div>
   );
