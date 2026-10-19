@@ -164,9 +164,11 @@ export default function SongsPage() {
         )}
       </div>
 
-      <div style={{ marginTop: 16 }}>
-        <LyricsSheet lyrics={lyrics} />
-      </div>
+      {lyrics.sections.length > 0 && (
+        <div style={{ marginTop: 16 }}>
+          <LyricsSheet lyrics={lyrics} />
+        </div>
+      )}
 
       <p style={{ textAlign: "center", marginTop: 24 }}>
         <button

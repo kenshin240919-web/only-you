@@ -1,4 +1,4 @@
-import { type Draft, EMPTY_DRAFT, type Lyrics } from "./draft";
+import { type Draft, EMPTY_DRAFT } from "./draft";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -22,21 +22,4 @@ export function parseDraft(input: unknown): Draft | null {
   if (!out.relationship || !out.genre || !out.vocal || !out.agreeRequired) return null;
   if (!EMAIL_RE.test(out.email.trim())) return null;
   return out;
-}
-
-export function parseLyrics(input: unknown): Lyrics | null {
-  if (!input || typeof input !== "object") return null;
-  const { title, sections } = input as { title?: unknown; sections?: unknown };
-  if (typeof title !== "string" || !title.trim() || title.length > 60) return null;
-  if (!Array.isArray(sections) || sections.length === 0 || sections.length > 20) return null;
-  const parsed = [];
-  for (const s of sections) {
-    if (!s || typeof s !== "object") return null;
-    const { label, lines } = s as { label?: unknown; lines?: unknown };
-    if (typeof label !== "string" || label.length > 20) return null;
-    if (!Array.isArray(lines) || lines.length > 20) return null;
-    if (!lines.every((l) => typeof l === "string" && l.length <= 120)) return null;
-    parsed.push({ label, lines: lines as string[] });
-  }
-  return { title: title.trim(), sections: parsed };
 }

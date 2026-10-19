@@ -41,9 +41,11 @@ export default function GiftReveal({ gift, token }: { gift: GiftView; token: str
           note={gift.hasAudio ? undefined : "노래를 마무리하고 있어요. 잠시 후 다시 열어 주세요."}
         />
       </div>
-      <div style={{ marginTop: 16 }}>
-        <LyricsSheet lyrics={gift.lyrics} />
-      </div>
+      {gift.lyrics.sections.length > 0 && (
+        <div style={{ marginTop: 16 }}>
+          <LyricsSheet lyrics={gift.lyrics} />
+        </div>
+      )}
       <div className="card" style={{ marginTop: 24, textAlign: "center" }}>
         <p style={{ margin: "0 0 12px" }}>나도 소중한 사람에게 노래를 선물하고 싶다면</p>
         <Link href="/" className="btn">

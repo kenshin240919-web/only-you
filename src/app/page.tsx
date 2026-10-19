@@ -31,8 +31,8 @@ const SAMPLES = [
 
 const STEPS = [
   { title: "이야기 쓰기", desc: "8가지 질문에 답하면 돼요. 약 3~5분이면 충분해요." },
-  { title: "가사 먼저 확인", desc: "결제 전에 가사를 무료로 보고 직접 고칠 수 있어요." },
-  { title: "결제하고 제작", desc: "확정한 가사로 AI가 노래를 만들어요." },
+  { title: "주문하기", desc: "입력한 내용을 확인하고 결제해요." },
+  { title: "AI가 노래 제작", desc: "이야기로 가사와 노래를 함께 만들고, 완성되면 이메일로 알려 드려요." },
   { title: "듣고 선물하기", desc: "MP3를 내려받고, 선물 링크로 마음을 전하세요." },
 ];
 
@@ -53,8 +53,8 @@ const FAQ = [
     a: "Only U song은 AI로 가사와 음악을 만듭니다. 사람이 직접 작곡하거나 노래하지 않으며, 이 점을 숨기지 않습니다.",
   },
   {
-    q: "결제 전에 무엇을 볼 수 있나요?",
-    a: "입력하신 이야기로 만든 가사를 무료로 먼저 보여 드립니다. 직접 고치거나 AI에게 2번까지 다시 쓰게 할 수 있어요.",
+    q: "결제 전에 가사를 볼 수 있나요?",
+    a: "가사와 노래는 결제 후 AI가 입력하신 이야기로 함께 만들어요. 위의 예시 노래로 어떤 느낌인지 먼저 들어 보세요.",
   },
   {
     q: "노래를 받은 뒤 고칠 수 있나요?",
@@ -82,7 +82,7 @@ export default function Home() {
         </h1>
         <p>말로 다 못한 마음을 이야기로 들려주세요. 그 사람의 이름과 추억이 담긴 노래로 만들어 드릴게요.</p>
         <Link href="/create" className="btn">
-          무료로 가사 받아보기 →
+          노래 만들기 시작 →
         </Link>
         <p className="hero-meta">
           완성곡 {formatWon(PRICE)} · MP3 다운로드 포함 · AI로 제작합니다
@@ -135,7 +135,7 @@ export default function Home() {
             부가세 포함 · 1회 결제
           </p>
           <ul className="check-list">
-            <li>이름과 추억을 담은 맞춤 가사 (결제 전 무료 확인)</li>
+            <li>이름과 추억을 담은 맞춤 가사</li>
             <li>완성곡 1곡 (약 2분 30초 목표)</li>
             <li>MP3 다운로드 — 추가 비용 없음</li>
             <li>받는 분을 위한 선물 페이지 링크</li>
@@ -161,9 +161,9 @@ export default function Home() {
 
       <section className="section container" style={{ textAlign: "center" }}>
         <h2>오늘, 그 사람에게 노래를 선물하세요</h2>
-        <p className="section-lead">가사 확인까지는 무료예요.</p>
+        <p className="section-lead">3~5분이면 이야기를 다 쓸 수 있어요.</p>
         <Link href="/create" className="btn">
-          무료로 가사 받아보기 →
+          노래 만들기 시작 →
         </Link>
       </section>
     </>

@@ -7,7 +7,6 @@ import {
   type OrderState,
   callName,
   emptyOrder,
-  generateLyrics,
   genreLabel,
   loadOrder,
   reasonLabel,
@@ -81,8 +80,7 @@ export default function CreatePage() {
 
   const d = order.draft;
   const update = (patch: Partial<Draft>) =>
-    // 설문을 바꾸면 이전에 만든 가사·확정 상태는 무효가 된다.
-    setOrder((o) => ({ ...o, draft: { ...o.draft, ...patch }, lyrics: null, rewrites: 0, confirmedAt: null }));
+    setOrder((o) => ({ ...o, draft: { ...o.draft, ...patch } }));
 
   const next = () => {
     if (!stepValid(step, d)) return;
@@ -90,9 +88,8 @@ export default function CreatePage() {
       setStep(step + 1);
       return;
     }
-    const updated: OrderState = { ...order, lyrics: generateLyrics(d, 0), rewrites: 0, confirmedAt: null };
-    saveOrder(updated);
-    router.push("/draft");
+    saveOrder(order);
+    router.push("/checkout");
   };
   const prev = () => (step > 1 ? setStep(step - 1) : router.push("/"));
 
@@ -374,7 +371,7 @@ export default function CreatePage() {
             <h1 className="step-title" tabIndex={-1} ref={headingRef}>
               입력한 내용을 확인해 주세요
             </h1>
-            <p className="step-help">다음 화면에서 가사를 무료로 먼저 보여 드려요.</p>
+            <p className="step-help">결제하면 이 이야기로 AI가 가사와 노래를 함께 만들어요.</p>
             <ul className="summary-list card" style={{ padding: "4px 20px", marginBottom: 24 }}>
               <SummaryRow k="받는 분" v={relationshipLabel(d)} onEdit={() => setStep(1)} />
               <SummaryRow
@@ -439,7 +436,7 @@ export default function CreatePage() {
               이전
             </button>
             <button type="submit" className="btn" disabled={!stepValid(step, d)}>
-              {step === TOTAL ? "가사 미리보기 (무료)" : "다음"}
+              {step === TOTAL ? "주문 확인하기" : "다음"}
             </button>
           </div>
         </div>
