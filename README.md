@@ -24,7 +24,7 @@ npm run dev      # http://localhost:3000
 
 ## 다음 단계에서 교체할 부분
 
-- `src/lib/draft.ts`의 `generateLyrics` → 서버의 AI 가사 생성 (ElevenLabs 계획 API 또는 Claude API)
+- 가사·음악 생성 → ElevenLabs가 사연으로 가사까지 작성(A안, 추가 비용 없음). 결정 근거와 Claude 가사(B안)로 바꾸는 방법은 [`docs/DECISIONS.md`](docs/DECISIONS.md)
 - 모의 결제 → 국내 PG + 서버 검증
 - `MockPlayer` → 실제 음원 재생, MP3 다운로드
 - localStorage → DB(Supabase 등)와 이메일 인증
