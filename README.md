@@ -24,7 +24,6 @@ npm run dev      # http://localhost:3000
 ## 다음 단계에서 교체할 부분
 
 - 가사·음악 생성 → ElevenLabs가 사연으로 가사까지 작성(A안, 추가 비용 없음). 결정 근거와 Claude 가사(B안)로 바꾸는 방법은 [`docs/DECISIONS.md`](docs/DECISIONS.md)
-- 모의 결제 → 국내 PG + 서버 검증
 - localStorage → DB(Supabase 등)와 이메일 인증
 
 ## Cloudflare 배포
@@ -61,3 +60,17 @@ npm run deploy    # 직접 배포 (wrangler 로그인 필요)
   1. API 키 등록: `npx wrangler secret put ELEVENLABS_API_KEY` (또는 대시보드 → Worker → Settings → Variables and Secrets)
   2. `wrangler.jsonc`의 `vars.MUSIC_GENERATION`을 `"on"`으로 바꿔 배포
 - 로컬 시험: `.dev.vars`에 `ELEVENLABS_API_KEY="..."`, `MUSIC_GENERATION="on"`을 넣고 `npm run preview`. 한 곡에 Starter 분량 2.5분이 쓰입니다.
+
+## 결제 (페이앱)
+
+saju.guidejung.com과 같은 페이앱 판매자 계정·방식으로 건별 결제를 받습니다. 코드는 `src/lib/payapp.ts`, `src/app/api/payapp/`입니다.
+
+- 결제 화면에서 휴대폰 번호(페이앱 필수값, 저장하지 않음)를 받아 결제 대기 주문을 만들고 페이앱 결제창으로 보냅니다. 금액은 서버(`PRICE`)가 정합니다.
+- 결제 완료는 페이앱 알림(`/api/payapp/feedback`)이 판매자 연동값·결제요청번호·금액이 모두 맞을 때만 인정하고, 그때 노래 제작을 시작합니다. 취소·환불 알림이 오면 결제를 취소 상태로 바꾸고 선물 링크를 끕니다.
+- 결제 상태는 D1 `payments` 테이블(`migrations/0003_payments.sql`)에 남습니다.
+- **기본은 모의 결제입니다.** 켜려면:
+  1. 페이앱 판매자 사이트 → 설정 → 연동 정보의 아이디·연동 KEY·연동 VALUE를 Worker 비밀 값으로 등록: `PAYAPP_USERID`, `PAYAPP_LINKKEY`, `PAYAPP_LINKVAL` (대시보드 → Worker → Settings → Variables and Secrets)
+  2. `wrangler.jsonc`의 `vars.PAYMENT_MODE`를 `"payapp"`으로 바꿔 배포
+- 결제를 켠 뒤 노래 제작까지 하려면 `MUSIC_GENERATION`도 `"on"`이어야 합니다(위 "노래 생성" 참고).
+
+이용약관·개인정보처리방침·환불 정책은 `/terms`, `/privacy`, `/refund`에 있고, 사업자 정보는 `src/lib/business.ts` 한 곳에서 관리합니다.

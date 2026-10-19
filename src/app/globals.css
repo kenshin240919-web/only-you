@@ -878,3 +878,55 @@ textarea {
   flex-direction: column;
   gap: 16px;
 }
+
+/* Terms, privacy, refund */
+.legal {
+  padding-bottom: 40px;
+  line-height: 1.75;
+}
+
+.legal h2 {
+  font-size: 18px;
+  margin: 32px 0 8px;
+}
+
+.legal p,
+.legal li {
+  color: var(--ink-soft);
+  font-size: 15px;
+}
+
+.legal ol,
+.legal ul {
+  padding-left: 20px;
+  margin: 0;
+}
+
+.legal table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.legal th,
+.legal td {
+  border: 1px solid var(--line);
+  padding: 8px 10px;
+  text-align: left;
+  vertical-align: top;
+}
+
+.legal .table-wrap {
+  overflow-x: auto;
+}
+
+.legal-meta {
+  margin-top: 32px;
+  font-size: 14px;
+}
+
+.footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+}
