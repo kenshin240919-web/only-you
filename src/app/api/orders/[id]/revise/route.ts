@@ -6,9 +6,9 @@ import type { Draft, Lyrics } from "@/lib/draft";
 import { GENRES, VOCALS } from "@/lib/options";
 import { payappEnabled } from "@/lib/payapp";
 import { parsePhone } from "@/lib/phone";
-import { FREE_REVISIONS, MAX_REVISIONS } from "@/lib/pricing";
+import { MAX_REVISIONS, freeRevisions } from "@/lib/pricing";
 
-// 노래 수정 요청. 무료 1회는 바로 다시 만들고, 그다음 2회는 1,900원씩 결제가 확인되면 다시 만든다.
+// 노래 수정 요청. 무료 횟수(기본 1회, 올인원 3회) 안에서는 바로 다시 만들고, 그 뒤는 1,900원씩 결제가 확인되면 다시 만든다.
 // 같은 사연 안에서 가사 표현·장르·보컬을 바꿀 수 있고, 사연 자체를 바꾸는 것은 새 주문이다.
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -21,14 +21,15 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   const note = typeof body?.note === "string" ? body.note.trim().slice(0, 300) : "";
   if (!genre && !vocal && !note) return NextResponse.json({ error: "invalid" }, { status: 400 });
 
-  if (ownership(await getPurchases(id)).payment !== "paid") return NextResponse.json({ error: "not_paid" }, { status: 409 });
+  const { payment, owned } = ownership(await getPurchases(id));
+  if (payment !== "paid") return NextResponse.json({ error: "not_paid" }, { status: 409 });
   const song = await getSong(id);
   if (song?.status !== "ready") return NextResponse.json({ error: "song_not_ready" }, { status: 409 });
   const revisions = await getRevisions(id);
   const used = revisions.filter((r) => r.status === "started").length;
   if (used >= MAX_REVISIONS) return NextResponse.json({ error: "limit" }, { status: 409 });
 
-  const free = used < FREE_REVISIONS;
+  const free = used < freeRevisions(owned);
   const { env } = await getCloudflareContext({ async: true });
   const phone = parsePhone(body?.phone);
   if (!free && payappEnabled(env) && !phone) return NextResponse.json({ error: "invalid_phone" }, { status: 400 });

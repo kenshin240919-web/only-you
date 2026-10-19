@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { BUSINESS } from "@/lib/business";
-import { ADDON_PAIR, PAID_REVISIONS, PRICES, formatWon } from "@/lib/pricing";
+import { ADDON_PAIR, MAX_REVISIONS, PAID_REVISIONS, PRICES, formatWon } from "@/lib/pricing";
 
 export const metadata: Metadata = { title: "이용약관 · Only U song" };
 
@@ -37,8 +37,9 @@ export default function TermsPage() {
         <li>
           맞춤 노래 1곡은 {formatWon(PRICES.song)}이며 무제한 듣기, 가사 보기, 선물 페이지 링크, 수정 1회를 포함합니다. MP3
           다운로드는 {formatWon(PRICES.mp3)}, 가사 카드는 {formatWon(PRICES.card)}(둘을 함께 사면{" "}
-          {formatWon(ADDON_PAIR)}), 이 모두를 함께 사는 올인원은 {formatWon(PRICES.bundle)}입니다. 추가 수정은 최대{" "}
-          {PAID_REVISIONS}회까지 회당 {formatWon(PRICES.revision)}입니다. 모든 가격은 부가가치세 포함입니다.
+          {formatWon(ADDON_PAIR)}), 이 모두를 함께 사는 올인원은 {formatWon(PRICES.bundle)}입니다. 노래만 산 경우 추가 수정은 최대{" "}
+          {PAID_REVISIONS}회까지 회당 {formatWon(PRICES.revision)}이며, 노래·MP3·가사 카드를 모두 산 경우(올인원)에는 수정{" "}
+          {MAX_REVISIONS}회가 모두 무료입니다. 모든 가격은 부가가치세 포함입니다.
         </li>
         <li>MP3와 가사 카드는 노래 주문과 함께 사거나, 노래를 받은 뒤 &lsquo;내 노래&rsquo;에서 따로 살 수 있습니다.</li>
         <li>결제는 신용카드 등 운영자가 정한 결제수단으로 하며, 결제대행사(페이앱)를 통해 처리됩니다. 결제대행사의 결제 확인을 위해 결제 시 휴대폰 번호를 입력받습니다.</li>

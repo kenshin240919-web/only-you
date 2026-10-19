@@ -1,16 +1,16 @@
 import { NextResponse } from "next/server";
 import { getDb, getOwnedOrder, getPurchases, getRevisions, getSong, ownership, songView } from "@/lib/db";
-import { FREE_REVISIONS, MAX_REVISIONS } from "@/lib/pricing";
+import { type Item, MAX_REVISIONS, freeRevisions } from "@/lib/pricing";
 
 type Ctx = { params: Promise<{ id: string }> };
 
 // 시작된 수정 수로 남은 무료·유료 횟수를 알려 준다.
-function revisionSummary(rows: Awaited<ReturnType<typeof getRevisions>>) {
+function revisionSummary(rows: Awaited<ReturnType<typeof getRevisions>>, owned: Item[]) {
   const used = rows.filter((r) => r.status === "started").length;
   return {
     used,
     max: MAX_REVISIONS,
-    freeLeft: Math.max(0, FREE_REVISIONS - used),
+    freeLeft: Math.max(0, freeRevisions(owned) - used),
   };
 }
 
@@ -21,6 +21,7 @@ export async function GET(req: Request, { params }: Ctx) {
   const row = await getOwnedOrder(id, req.headers.get("x-owner-token"));
   if (!row) return notFound();
   const purchases = await getPurchases(row.id);
+  const own = ownership(purchases);
   return NextResponse.json({
     id: row.id,
     orderNo: row.order_no,
@@ -29,10 +30,10 @@ export async function GET(req: Request, { params }: Ctx) {
     giftEnabled: row.gift_enabled === 1,
     draft: JSON.parse(row.draft_json),
     lyrics: JSON.parse(row.lyrics_json),
-    ...ownership(purchases),
+    ...own,
     // 결제창에서 돌아온 직후처럼 결제 확인을 기다리는 구매가 있으면 화면이 다시 확인한다.
     pendingPurchase: purchases.some((p) => p.status === "ready"),
-    revisions: revisionSummary(await getRevisions(row.id)),
+    revisions: revisionSummary(await getRevisions(row.id), own.owned),
     song: songView(await getSong(row.id)),
   });
 }

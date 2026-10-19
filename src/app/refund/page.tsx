@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { BUSINESS } from "@/lib/business";
-import { ADDON_PAIR, PAID_REVISIONS, PRICES, formatWon } from "@/lib/pricing";
+import { ADDON_PAIR, MAX_REVISIONS, PAID_REVISIONS, PRICES, formatWon } from "@/lib/pricing";
 
 export const metadata: Metadata = { title: "환불 정책 · Only U song" };
 
@@ -20,9 +20,9 @@ export default function RefundPage() {
         <li>맞춤 노래 1곡(약 2분 30초 목표, 무제한 듣기·가사 보기·선물 페이지 링크·수정 1회 포함): {formatWon(PRICES.song)}</li>
         <li>MP3 다운로드: {formatWon(PRICES.mp3)}</li>
         <li>가사 카드(선물용 이미지): {formatWon(PRICES.card)}</li>
-        <li>MP3 + 가사 카드를 함께 살 때: {formatWon(ADDON_PAIR)}</li>
-        <li>올인원(노래 + MP3 + 가사 카드): {formatWon(PRICES.bundle)}</li>
-        <li>추가 수정(무료 1회 이후 최대 {PAID_REVISIONS}회): 회당 {formatWon(PRICES.revision)}</li>
+        <li>MP3 + 가사 카드를 함께 살 때: {formatWon(ADDON_PAIR)} (이후 수정 {MAX_REVISIONS}회 모두 무료)</li>
+        <li>올인원(노래 + MP3 + 가사 카드 + 수정 {MAX_REVISIONS}회 무료): {formatWon(PRICES.bundle)}</li>
+        <li>추가 수정(노래만 산 경우, 무료 1회 이후 최대 {PAID_REVISIONS}회): 회당 {formatWon(PRICES.revision)}</li>
       </ul>
 
       <h2>2. 청약철회</h2>
@@ -44,8 +44,9 @@ export default function RefundPage() {
       <h2>3. 수정과 재제작</h2>
       <ol>
         <li>
-          수정: 같은 이야기 안에서 가사 표현·장르·보컬을 바꿔 다시 만들 수 있습니다. 첫 1회는 무료이고, 이후 최대{" "}
-          {PAID_REVISIONS}회까지 회당 {formatWon(PRICES.revision)}입니다. 수정본은 결제(무료 수정은 요청) 직후 만들어
+          수정: 같은 이야기 안에서 가사 표현·장르·보컬을 바꿔 다시 만들 수 있습니다. 노래만 산 경우 첫 1회는 무료이고, 이후 최대{" "}
+          {PAID_REVISIONS}회까지 회당 {formatWon(PRICES.revision)}입니다. 올인원(노래·MP3·가사 카드를 모두 산 경우)은{" "}
+          {MAX_REVISIONS}회 모두 무료입니다. 수정본은 결제(무료 수정은 요청) 직후 만들어
           제공되므로, 제공된 뒤에는 위 2-②에 따라 청약철회가 제한됩니다.
         </li>
         <li>
