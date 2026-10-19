@@ -3,7 +3,7 @@ import Link from "next/link";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Only You — 단 한 사람을 위한 노래",
+  title: "Only U song — 단 한 사람을 위한 노래",
   description: "소중한 사람의 이야기를 담아, 가사를 먼저 확인하고 만드는 맞춤 노래 선물.",
 };
 
@@ -28,11 +28,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </div>
         <header className="site-header">
           <div className="container header-inner">
-            <Link href="/" className="logo" aria-label="Only You 홈">
+            <Link href="/" className="logo" aria-label="Only U song 홈">
               <span className="logo-mark" aria-hidden>
                 ♪
               </span>
-              Only You
+              Only U song
             </Link>
             <nav className="header-nav">
               <Link href="/songs">내 노래</Link>
@@ -45,7 +45,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <main>{children}</main>
         <footer className="site-footer">
           <div className="container">
-            <p className="footer-brand">Only You · 온리유</p>
+            <p className="footer-brand">Only U song · 온리유송</p>
             <p>AI로 가사와 음악을 만드는 맞춤 노래 선물 서비스입니다.</p>
             <p className="muted">사업자 정보와 약관은 정식 출시 전에 게시됩니다.</p>
           </div>
