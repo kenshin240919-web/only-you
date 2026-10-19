@@ -52,7 +52,6 @@ export const EMPTY_DRAFT: Draft = {
   agreeMarketing: false,
 };
 
-export const PRICE = 19900;
 
 const STORAGE_KEY = "onlyyou:order";
 // 공용 기기에 사연이 오래 남지 않도록 로컬 초안은 7일 뒤 만료한다.
@@ -111,8 +110,4 @@ export function callName(d: Draft): string {
 /** 노래가 완성되기 전까지 쓰는 임시 제목. 완성되면 ElevenLabs가 붙인 제목으로 바뀐다. */
 export function songTitle(d: Draft): string {
   return `${callName(d)}에게 보내는 노래`;
-}
-
-export function formatWon(n: number): string {
-  return `${n.toLocaleString("ko-KR")}원`;
 }

@@ -23,7 +23,7 @@ const VOCAL_STYLE: Record<string, string> = {
 const clip = (s: string, max = 400) => s.trim().replace(/\s+/g, " ").slice(0, max);
 
 /** 설문을 ElevenLabs 프롬프트로 바꾼다. 비교 시험에서 줄이 길어지는 경향이 있어 짧은 줄을 요구한다. */
-export function buildPrompt(d: Draft): string {
+export function buildPrompt(d: Draft, revisionNote = ""): string {
   const call = callName(d);
   const lines = [
     `Write and perform ${GENRE_STYLE[d.genre] ?? GENRE_STYLE.ballad}, sung by ${VOCAL_STYLE[d.vocal] ?? "a warm vocal that suits the song"}.`,
@@ -39,6 +39,7 @@ export function buildPrompt(d: Draft): string {
   if (d.message.trim()) lines.push(`End with this message: "${clip(d.message, 200)}"`);
   if (d.exclude.trim()) lines.push(`Never mention: ${clip(d.exclude, 200)}`);
   lines.push("Use only the details given here and do not invent new events.");
+  if (revisionNote.trim()) lines.push(`This is a revised version. The customer asked: "${clip(revisionNote, 300)}"`);
   return lines.join("\n");
 }
 
@@ -104,12 +105,14 @@ async function finish(orderId: string, fields: Record<string, string | null>) {
     .run();
 }
 
-async function generate(env: CloudflareEnv, orderId: string, draft: Draft, fallbackTitle: string) {
+export type RevisionRequest = { genre?: string; vocal?: string; note?: string };
+
+async function generate(env: CloudflareEnv, orderId: string, draft: Draft, fallbackTitle: string, version = 0, note = "") {
   try {
     const res = await fetch(ENDPOINT, {
       method: "POST",
       headers: { "xi-api-key": env.ELEVENLABS_API_KEY, "content-type": "application/json" },
-      body: JSON.stringify({ model_id: MODEL, prompt: buildPrompt(draft), music_length_ms: LENGTH_MS }),
+      body: JSON.stringify({ model_id: MODEL, prompt: buildPrompt(draft, note), music_length_ms: LENGTH_MS }),
     });
     if (!res.ok) {
       // 자동 재시도는 중복 과금 위험이 있어 하지 않는다. 운영자가 error를 보고 판단한다.
@@ -120,7 +123,8 @@ async function generate(env: CloudflareEnv, orderId: string, draft: Draft, fallb
 
     const meta = (json ?? {}) as { composition_plan?: { chunks?: { text?: string }[] }; song_metadata?: { title?: string } };
     const title = meta.song_metadata?.title?.trim() || fallbackTitle;
-    const key = `songs/${orderId}.mp3`;
+    // 수정본은 새 파일로 저장해 이전 버전을 덮어쓰지 않는다.
+    const key = version ? `songs/${orderId}-r${version}.mp3` : `songs/${orderId}.mp3`;
     await env.SONGS.put(key, audio, { httpMetadata: { contentType: "audio/mpeg" } });
     await finish(orderId, {
       status: "ready",
@@ -150,4 +154,22 @@ export async function startSong(orderId: string, draft: Draft, fallbackTitle: st
   if (!enabled || !claimed.meta.changes) return;
   // 응답을 보낸 뒤에도 생성이 이어지도록 waitUntil에 맡긴다. 보통 10~15초 걸린다.
   ctx.waitUntil(generate(env, orderId, draft, fallbackTitle));
+}
+
+/**
+ * 완성된(또는 실패한) 노래를 수정 요청대로 다시 만든다. 같은 순간에 두 번 시작되지 않도록 상태로 잠근다.
+ * 시작했으면 true. 생성이 꺼져 있거나 이미 만드는 중이면 false.
+ */
+export async function reviseSong(orderId: string, draft: Draft, fallbackTitle: string, version: number, req: RevisionRequest): Promise<boolean> {
+  const { env, ctx } = await getCloudflareContext({ async: true });
+  if ((env.MUSIC_GENERATION as string) !== "on" || !env.ELEVENLABS_API_KEY) return false;
+  const db = await getDb();
+  const claimed = await db
+    .prepare("UPDATE songs SET status = 'generating', started_at = ?, error = NULL WHERE order_id = ? AND status IN ('ready', 'failed')")
+    .bind(new Date().toISOString(), orderId)
+    .run();
+  if (!claimed.meta.changes) return false;
+  const revised = { ...draft, genre: req.genre || draft.genre, vocal: req.vocal || draft.vocal };
+  ctx.waitUntil(generate(env, orderId, revised, fallbackTitle, version, req.note ?? ""));
+  return true;
 }
