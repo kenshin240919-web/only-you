@@ -3,3 +3,6 @@ node_modules
 next-env.d.ts
 *.tsbuildinfo
 .env*
+.open-next
+.wrangler
+.dev.vars

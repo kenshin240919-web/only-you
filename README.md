@@ -28,3 +28,18 @@ npm run dev      # http://localhost:3000
 - 모의 결제 → 국내 PG + 서버 검증
 - `MockPlayer` → 실제 음원 재생, MP3 다운로드
 - localStorage → DB(Supabase 등)와 이메일 인증
+
+## Cloudflare 배포
+
+Cloudflare Workers에 [OpenNext](https://opennext.js.org/cloudflare)로 배포합니다. 설정은 `wrangler.jsonc`, `open-next.config.ts`에 있습니다.
+
+```bash
+npm run preview   # Cloudflare 런타임으로 로컬 확인
+npm run deploy    # 직접 배포 (wrangler 로그인 필요)
+```
+
+대시보드에서 GitHub로 연결할 때(Workers Builds)는 다음 값을 사용합니다.
+
+- 프로젝트(Worker) 이름: `only-you` (`wrangler.jsonc`의 `name`과 같아야 함)
+- Build command: `npx opennextjs-cloudflare build`
+- Deploy command: `npx opennextjs-cloudflare deploy`
