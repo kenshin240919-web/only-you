@@ -11,7 +11,7 @@ import { usePaymentProvider } from "@/components/usePaymentProvider";
 import { useOrder } from "@/components/useOrder";
 import { type Draft, type Lyrics, callName, clearOrder, genreLabel } from "@/lib/draft";
 import { GENRES, VOCALS, labelOf } from "@/lib/options";
-import { ADDON_PAIR, type Item, PRICES, formatWon } from "@/lib/pricing";
+import { ADDON_PAIR, type Item, MAX_REVISIONS, PRICES, formatWon, isAllInOne } from "@/lib/pricing";
 
 type SongStatus = "generating" | "ready" | "failed" | "disabled" | "none";
 
@@ -216,7 +216,7 @@ export default function SongsPage() {
               <div className="actions-row" style={{ margin: 0 }}>
                 {missing.length === 2 && (
                   <button type="button" className="btn" disabled={busy || !phoneOk} onClick={() => buy(["mp3", "card"])}>
-                    MP3 + 가사 카드 {formatWon(ADDON_PAIR)}
+                    MP3 + 가사 카드 {formatWon(ADDON_PAIR)} (수정 {MAX_REVISIONS}회 무료로)
                   </button>
                 )}
                 {missing.map((i) => (
@@ -246,8 +246,9 @@ export default function SongsPage() {
         <div>
           <strong>노래 수정</strong>
           <p className="muted" style={{ margin: "4px 0 0", fontSize: 14 }}>
-            같은 이야기 안에서 가사 표현, 장르, 보컬을 바꿔 다시 만들어요. 남은 횟수 {revLeft}/{song.revisions.max}회 (첫 1회 무료,
-            이후 회당 {formatWon(PRICES.revision)}). 이름·호칭이 틀렸거나 추억이 빠졌다면 횟수와 관계없이{" "}
+            같은 이야기 안에서 가사 표현, 장르, 보컬을 바꿔 다시 만들어요. 남은 횟수 {revLeft}/{song.revisions.max}회 (
+            {isAllInOne(song.owned) ? "올인원이라 모두 무료" : `첫 1회 무료, 이후 회당 ${formatWon(PRICES.revision)}`}). 이름·호칭이
+            틀렸거나 추억이 빠졌다면 횟수와 관계없이{" "}
             <Link href="/refund">무료로 다시 만들어 드려요</Link>.
           </p>
         </div>

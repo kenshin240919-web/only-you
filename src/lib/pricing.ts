@@ -10,10 +10,20 @@ export const PRICES = {
   bundle: 14900,
 } as const;
 
-// 수정: 무료 1회 + 유료 2회. 우리 잘못(이름·호칭 오류, 추억 누락)으로 다시 만드는 것은 횟수에 넣지 않는다.
+// 수정: 무료 1회 + 유료 2회. 올인원(노래·MP3·가사 카드를 모두 가진 주문)은 3회 모두 무료다.
+// 우리 잘못(이름·호칭 오류, 추억 누락)으로 다시 만드는 것은 횟수에 넣지 않는다.
 export const FREE_REVISIONS = 1;
 export const PAID_REVISIONS = 2;
 export const MAX_REVISIONS = FREE_REVISIONS + PAID_REVISIONS;
+
+export const isAllInOne = (owned: Item[]) => owned.includes("song") && owned.includes("mp3") && owned.includes("card");
+
+export function freeRevisions(owned: Item[]): number {
+  return isAllInOne(owned) ? MAX_REVISIONS : FREE_REVISIONS;
+}
+
+/** 올인원을 따로 샀다면 내야 할 금액(노래 + MP3 + 가사 카드 + 유료 수정 2회). */
+export const ALL_IN_ONE_LIST = PRICES.song + PRICES.mp3 + PRICES.card + PAID_REVISIONS * PRICES.revision;
 
 export const ITEM_LABELS: Record<Item, string> = {
   song: "맞춤 노래 (무제한 듣기)",
@@ -22,7 +32,7 @@ export const ITEM_LABELS: Record<Item, string> = {
   revision: "노래 수정 1회",
 };
 
-/** MP3와 가사 카드를 함께 사면 노래와 합쳐 올인원 가격이 되도록 둘을 묶어 할인한다. */
+/** MP3와 가사 카드를 함께 사면 노래와 합쳐 올인원 가격이 되도록 둘을 묶어 할인한다(이때 수정도 올인원처럼 3회 무료). */
 export const ADDON_PAIR = PRICES.bundle - PRICES.song;
 
 export function priceOf(items: Item[]): number {

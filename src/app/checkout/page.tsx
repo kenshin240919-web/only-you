@@ -9,7 +9,7 @@ import { usePaymentProvider } from "@/components/usePaymentProvider";
 import { useOrder } from "@/components/useOrder";
 import { callName, genreLabel, reasonLabel, relationshipLabel, songTitle } from "@/lib/draft";
 import { VOCALS, labelOf } from "@/lib/options";
-import { type Item, PRICES, formatWon, priceOf } from "@/lib/pricing";
+import { ALL_IN_ONE_LIST, type Item, MAX_REVISIONS, PAID_REVISIONS, PRICES, formatWon, priceOf } from "@/lib/pricing";
 
 const ADDONS: { item: "mp3" | "card"; label: string; desc: string }[] = [
   { item: "mp3", label: "MP3 다운로드", desc: "휴대폰·컴퓨터에 저장해 언제든 들어요" },
@@ -122,10 +122,20 @@ export default function CheckoutPage() {
             </label>
           ))}
           {allInOne && (
-            <div className="row-between bundle-note">
-              <span>올인원 할인</span>
-              <span>-{formatWon(PRICES.song + PRICES.mp3 + PRICES.card - PRICES.bundle)}</span>
-            </div>
+            <>
+              <div className="row-between">
+                <span>
+                  추가 수정 {PAID_REVISIONS}회
+                  <br />
+                  <small className="muted">올인원은 수정 {MAX_REVISIONS}회 모두 무료</small>
+                </span>
+                <span>+{formatWon(PAID_REVISIONS * PRICES.revision)}</span>
+              </div>
+              <div className="row-between bundle-note">
+                <span>올인원 할인</span>
+                <span>-{formatWon(ALL_IN_ONE_LIST - PRICES.bundle)}</span>
+              </div>
+            </>
           )}
           <div className="row-between total">
             <span>{allInOne ? "올인원 결제금액" : "최종 결제금액"}</span>

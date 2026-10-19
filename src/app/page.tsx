@@ -1,6 +1,6 @@
 import Link from "next/link";
 import SamplePlayer from "@/components/SamplePlayer";
-import { ADDON_PAIR, FREE_REVISIONS, PAID_REVISIONS, PRICES, formatWon } from "@/lib/pricing";
+import { ADDON_PAIR, ALL_IN_ONE_LIST, MAX_REVISIONS, PAID_REVISIONS, PRICES, formatWon } from "@/lib/pricing";
 import { SAMPLES } from "@/lib/samples";
 
 const STEPS = [
@@ -32,11 +32,11 @@ const FAQ = [
   },
   {
     q: "노래를 받은 뒤 고칠 수 있나요?",
-    a: `같은 이야기 안에서 가사 표현·장르·보컬을 바꿔 다시 만들 수 있어요. 첫 1회는 무료, 이후 ${PAID_REVISIONS}회까지 회당 ${formatWon(PRICES.revision)}이에요. 이름·호칭이 틀렸거나 추억이 빠진 경우는 횟수와 관계없이 무료로 다시 만들어 드려요. 사연 자체를 바꾸는 것은 새 주문이에요.`,
+    a: `같은 이야기 안에서 가사 표현·장르·보컬을 바꿔 다시 만들 수 있어요. 노래만 사면 첫 1회는 무료, 이후 ${PAID_REVISIONS}회까지 회당 ${formatWon(PRICES.revision)}이고, 올인원은 ${MAX_REVISIONS}회 모두 무료예요. 이름·호칭이 틀렸거나 추억이 빠진 경우는 횟수와 관계없이 무료로 다시 만들어 드려요. 사연 자체를 바꾸는 것은 새 주문이에요.`,
   },
   {
     q: "MP3와 가사 카드는 꼭 같이 사야 하나요?",
-    a: `아니요. 노래(${formatWon(PRICES.song)})만 사서 들어 보신 뒤 '내 노래'에서 MP3(${formatWon(PRICES.mp3)})나 가사 카드(${formatWon(PRICES.card)})를 따로 살 수 있어요. 처음부터 모두 고르면 올인원 ${formatWon(PRICES.bundle)}이에요.`,
+    a: `아니요. 노래(${formatWon(PRICES.song)})만 사서 들어 보신 뒤 '내 노래'에서 MP3(${formatWon(PRICES.mp3)})나 가사 카드(${formatWon(PRICES.card)})를 따로 살 수 있어요. 처음부터 모두 고르면 수정 ${MAX_REVISIONS}회까지 무료인 올인원 ${formatWon(PRICES.bundle)}이에요.`,
   },
   {
     q: "얼마나 걸리나요?",
@@ -77,15 +77,15 @@ export default function Home() {
           <ul className="poster-facts">
             <li>
               <strong>{formatWon(PRICES.bundle)}</strong>
-              <span>올인원 (노래 + MP3 + 가사 카드)</span>
+              <span>올인원 (노래 + MP3 + 가사 카드 + 수정 {MAX_REVISIONS}회)</span>
             </li>
             <li>
               <strong>{formatWon(PRICES.song)}</strong>
               <span>노래만 먼저 들어 보기</span>
             </li>
             <li>
-              <strong>무료 {FREE_REVISIONS}회</strong>
-              <span>받은 뒤 수정 (이후 회당 {formatWon(PRICES.revision)})</span>
+              <strong>수정 무료</strong>
+              <span>올인원 {MAX_REVISIONS}회 · 노래만 사도 1회</span>
             </li>
           </ul>
           <Link href="/create" className="btn">
@@ -155,12 +155,13 @@ export default function Home() {
             <h3>올인원</h3>
             <div className="price">{formatWon(PRICES.bundle)}</div>
             <p className="muted plan-save">
-              따로 사면 {formatWon(PRICES.song + PRICES.mp3 + PRICES.card)} → {formatWon(PRICES.song + PRICES.mp3 + PRICES.card - PRICES.bundle)} 할인
+              따로 사면 {formatWon(ALL_IN_ONE_LIST)} → {formatWon(ALL_IN_ONE_LIST - PRICES.bundle)} 할인
             </p>
             <ul className="check-list">
               <li>노래 구성 전부</li>
               <li>MP3 다운로드</li>
               <li>선물용 가사 카드 이미지</li>
+              <li>수정 {MAX_REVISIONS}회 모두 무료</li>
             </ul>
             <Link href="/create" className="btn btn-block">
               노래 만들기 시작
@@ -178,11 +179,11 @@ export default function Home() {
             <span>{formatWon(PRICES.card)}</span>
           </div>
           <div className="row-between">
-            <span>MP3 + 가사 카드 (노래를 산 뒤 함께)</span>
+            <span>MP3 + 가사 카드 (노래를 산 뒤 함께, 수정 {MAX_REVISIONS}회 무료로)</span>
             <span>{formatWon(ADDON_PAIR)}</span>
           </div>
           <div className="row-between">
-            <span>추가 수정 (최대 {PAID_REVISIONS}회)</span>
+            <span>추가 수정 (노래만 산 경우, 최대 {PAID_REVISIONS}회)</span>
             <span>회당 {formatWon(PRICES.revision)}</span>
           </div>
           <p className="muted" style={{ margin: "8px 0 0", fontSize: 13 }}>
