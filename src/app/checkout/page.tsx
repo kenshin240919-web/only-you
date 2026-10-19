@@ -12,6 +12,8 @@ export default function CheckoutPage() {
   const router = useRouter();
   const [order, setOrder] = useOrder();
   const [agree, setAgree] = useState(false);
+  const [paying, setPaying] = useState(false);
+  const [error, setError] = useState("");
 
   if (!order) return null;
   if (!order.lyrics || !order.confirmedAt) {
@@ -20,11 +22,31 @@ export default function CheckoutPage() {
 
   const d = order.draft;
 
-  const pay = () => {
+  const pay = async () => {
     // 실제 서비스에서는 PG 결제 후 서버가 결과를 검증해야 paid가 된다.
-    const orderNo = `OY-${Date.now().toString(36).toUpperCase()}`;
-    setOrder({ ...order, paidAt: new Date().toISOString(), orderNo });
-    router.push("/orders");
+    setPaying(true);
+    setError("");
+    try {
+      const res = await fetch("/api/orders", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ draft: order.draft, lyrics: order.lyrics }),
+      });
+      if (!res.ok) throw new Error(String(res.status));
+      const saved = (await res.json()) as { id: string; ownerToken: string; giftToken: string; orderNo: string; paidAt: string };
+      setOrder({
+        ...order,
+        paidAt: saved.paidAt,
+        orderNo: saved.orderNo,
+        orderId: saved.id,
+        ownerToken: saved.ownerToken,
+        giftToken: saved.giftToken,
+      });
+      router.push("/orders");
+    } catch {
+      setError("주문을 저장하지 못했어요. 잠시 후 다시 시도해 주세요.");
+      setPaying(false);
+    }
   };
 
   return (
@@ -78,8 +100,13 @@ export default function CheckoutPage() {
 
       <div className="notice">시제품이라 실제 결제는 이루어지지 않습니다. 버튼을 누르면 결제가 완료된 것처럼 진행돼요.</div>
 
-      <button type="button" className="btn btn-block" disabled={!agree} onClick={pay}>
-        {formatWon(PRICE)} 결제하고 제작 시작
+      {error && (
+        <p className="field-error" role="alert">
+          {error}
+        </p>
+      )}
+      <button type="button" className="btn btn-block" disabled={!agree || paying} onClick={pay}>
+        {paying ? "주문 저장 중…" : `${formatWon(PRICE)} 결제하고 제작 시작`}
       </button>
     </div>
   );

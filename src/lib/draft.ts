@@ -30,6 +30,10 @@ export type OrderState = {
   confirmedAt: string | null;
   paidAt: string | null;
   orderNo: string | null;
+  // 결제 후 서버(D1)에 저장된 주문을 가리킨다. ownerToken은 이 기기만 아는 비밀값이다.
+  orderId: string | null;
+  ownerToken: string | null;
+  giftToken: string | null;
 };
 
 export const EMPTY_DRAFT: Draft = {
@@ -59,7 +63,7 @@ const STORAGE_KEY = "onlyyou:order";
 const TTL_MS = 7 * 24 * 60 * 60 * 1000;
 
 export function emptyOrder(): OrderState {
-  return { draft: { ...EMPTY_DRAFT }, lyrics: null, rewrites: 0, confirmedAt: null, paidAt: null, orderNo: null };
+  return { draft: { ...EMPTY_DRAFT }, lyrics: null, rewrites: 0, confirmedAt: null, paidAt: null, orderNo: null, orderId: null, ownerToken: null, giftToken: null };
 }
 
 export function loadOrder(): OrderState {
