@@ -43,3 +43,12 @@ npm run deploy    # 직접 배포 (wrangler 로그인 필요)
 - 프로젝트(Worker) 이름: `only-you` (`wrangler.jsonc`의 `name`과 같아야 함)
 - Build command: `npx opennextjs-cloudflare build`
 - Deploy command: `npx opennextjs-cloudflare deploy`
+
+## 데이터 저장 (Cloudflare D1)
+
+결제(시제품) 후 주문·가사는 D1 데이터베이스 `only-u-song-db`(바인딩 `DB`)에 저장됩니다.
+
+- 배포 시 wrangler가 DB가 없으면 자동으로 만듭니다. 테이블은 서버가 처음 요청을 받을 때 `CREATE TABLE IF NOT EXISTS`로 만듭니다 (스키마: `migrations/0001_orders.sql`).
+- `/api/orders` — 주문 저장, `/api/orders/[id]` — 주문 조회·선물 링크 켜고 끄기 (`x-owner-token` 헤더 필요)
+- `/gift/[token]` — 받는 사람 페이지. 노래·가사·전하는 말만 보여 주고 이메일·원래 사연은 보내지 않습니다.
+- 바인딩을 바꾸면 `npx wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts`로 타입을 다시 만듭니다.
