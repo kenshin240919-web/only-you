@@ -1,0 +1,47 @@
+{
+  "lengthMs": 150000,
+  "scenarios": {
+    "parents": {
+      "title": "고마워요",
+      "styles": ["Korean ballad", "emotional piano", "warm strings", "slow tempo around 70 bpm", "heartfelt", "intimate vocal", "Korean lyrics"],
+      "sections": [
+        ["1절", ["새벽마다 켜져 있던 부엌 불빛", "{CALL}의 하루는 늘 나보다 빨랐죠", "항상 남을 먼저 챙기던 그 손", "이제야 그 온기를 알아요"]],
+        ["후렴", ["고마워요 {CALL}", "말로는 다 못 한 이 마음", "노래에 담아 전해요", "세상에 단 하나뿐인 {CALL}"]],
+        ["2절", ["첫 손녀 루리가 오던 그날", "현관에서 한참을 안고 울던 {CALL}", "그 눈물 속에 담긴 사랑을", "나는 평생 기억할게요"]],
+        ["후렴", ["고마워요 {CALL}", "말로는 다 못 한 이 마음", "노래에 담아 전해요", "세상에 단 하나뿐인 {CALL}"]],
+        ["마무리", ["항상 고맙고 사랑해요", "{CALL}, 오래오래 곁에 있어 줘요"]]
+      ]
+    },
+    "couple": {
+      "title": "너였어",
+      "styles": ["Korean acoustic pop", "acoustic guitar", "soft percussion", "medium tempo around 90 bpm", "romantic", "warm", "Korean lyrics"],
+      "sections": [
+        ["1절", ["비 오던 성수동 골목에서", "우산 하나에 둘이 걷던 밤", "{CALL} 웃음소리에", "빗소리도 노래가 됐어"]],
+        ["후렴", ["사랑해 {CALL}", "오늘도 내일도 변함없이", "내 모든 계절이 너였어", "오직 너만, 나의 {CALL}"]],
+        ["2절", ["처음 맞춘 커플링 앞에서", "괜히 수줍던 우리 두 사람", "그날의 설렘을 아직도", "가슴에 품고 살아"]],
+        ["후렴", ["사랑해 {CALL}", "오늘도 내일도 변함없이", "내 모든 계절이 너였어", "오직 너만, 나의 {CALL}"]],
+        ["마무리", ["함께한 날보다 함께할 날이", "더 많기를 바라 {CALL}"]]
+      ]
+    },
+    "kids": {
+      "title": "괜찮아",
+      "styles": ["bright Korean pop", "upbeat", "piano and acoustic guitar", "handclaps", "tempo around 110 bpm", "cheerful and encouraging", "Korean lyrics"],
+      "sections": [
+        ["1절", ["운동장 끝까지 달려가던", "작은 발이 이렇게 컸구나", "넘어져도 툭툭 털고 일어나는", "멋진 우리 {CALL}"]],
+        ["후렴", ["괜찮아 {CALL}, 넌 잘하고 있어", "실수해도 다시 하면 돼", "어디서든 응원할게", "언제나 우리는 네 편이야"]],
+        ["2절", ["처음 자전거를 타던 날", "뒤를 잡던 손을 놓았을 때", "환하게 웃으며 달려가던", "그 모습이 아직 선해"]],
+        ["후렴", ["괜찮아 {CALL}, 넌 잘하고 있어", "실수해도 다시 하면 돼", "어디서든 응원할게", "언제나 우리는 네 편이야"]],
+        ["마무리", ["사랑해 {CALL}", "너의 모든 날을 응원해"]]
+      ]
+    }
+  },
+  "callNames": {
+    "parents": { "name": "순자 씨", "nickname": "엄마" },
+    "couple": { "name": "지은", "nickname": "자기야" },
+    "kids": { "name": "서준", "nickname": "우리 아들" }
+  },
+  "vocals": {
+    "female": "warm female vocal",
+    "male": "warm male vocal"
+  }
+}
