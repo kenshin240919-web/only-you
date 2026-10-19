@@ -26,7 +26,6 @@ npm run dev      # http://localhost:3000
 
 - 가사·음악 생성 → ElevenLabs가 사연으로 가사까지 작성(A안, 추가 비용 없음). 결정 근거와 Claude 가사(B안)로 바꾸는 방법은 [`docs/DECISIONS.md`](docs/DECISIONS.md)
 - 모의 결제 → 국내 PG + 서버 검증
-- `MockPlayer` → 실제 음원 재생, MP3 다운로드
 - localStorage → DB(Supabase 등)와 이메일 인증
 
 ## Cloudflare 배포
@@ -52,3 +51,14 @@ npm run deploy    # 직접 배포 (wrangler 로그인 필요)
 - `/api/orders` — 주문 저장, `/api/orders/[id]` — 주문 조회·선물 링크 켜고 끄기 (`x-owner-token` 헤더 필요)
 - `/gift/[token]` — 받는 사람 페이지. 노래·가사·전하는 말만 보여 주고 이메일·원래 사연은 보내지 않습니다.
 - 바인딩을 바꾸면 `npx wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts`로 타입을 다시 만듭니다.
+
+## 노래 생성 (ElevenLabs)
+
+결제(시제품)로 주문이 저장되면 서버가 사연을 ElevenLabs 음악 API에 보내 가사와 노래(2분 30초)를 함께 만듭니다. 코드는 `src/lib/music.ts`입니다.
+
+- 완성된 mp3는 R2 버킷 `only-u-song-audio`(바인딩 `SONGS`)에, 상태·실제 가사는 D1 `songs` 테이블(`migrations/0002_songs.sql`)에 저장됩니다.
+- 주문당 한 번만 생성하며, 실패해도 자동으로 다시 요청하지 않습니다(중복 과금 방지). 실패 사유는 `songs.error`에 남습니다.
+- **기본은 꺼져 있습니다.** 실제 결제를 연결하기 전에는 누구나 모의 결제로 생성을 일으킬 수 있으므로, 시험할 때만 켭니다.
+  1. API 키 등록: `npx wrangler secret put ELEVENLABS_API_KEY` (또는 대시보드 → Worker → Settings → Variables and Secrets)
+  2. `wrangler.jsonc`의 `vars.MUSIC_GENERATION`을 `"on"`으로 바꿔 배포
+- 로컬 시험: `.dev.vars`에 `ELEVENLABS_API_KEY="..."`, `MUSIC_GENERATION="on"`을 넣고 `npm run preview`. 한 곡에 Starter 분량 2.5분이 쓰입니다.

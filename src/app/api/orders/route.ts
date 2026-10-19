@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getDb, hashToken, randomToken } from "@/lib/db";
+import { startSong } from "@/lib/music";
 import { parseDraft, parseLyrics } from "@/lib/validate";
 
 const MAX_BODY = 32 * 1024;
@@ -33,6 +34,7 @@ export async function POST(req: Request) {
     )
     .bind(id, await hashToken(ownerToken), giftToken, orderNo, draft.email.trim(), JSON.stringify(draft), JSON.stringify(lyrics), now, now)
     .run();
+  await startSong(id, draft, lyrics.title);
 
   return NextResponse.json({ id, ownerToken, giftToken, orderNo, paidAt: now }, { status: 201 });
 }

@@ -21,6 +21,17 @@
       "migrations_dir": "migrations"
     }
   ],
+  // 완성된 노래 mp3 저장소.
+  "r2_buckets": [
+    {
+      "binding": "SONGS",
+      "bucket_name": "only-u-song-audio"
+    }
+  ],
+  // "on"일 때만 결제된 주문으로 ElevenLabs에 실제 생성을 요청한다(과금). API 키는 비밀 값 ELEVENLABS_API_KEY로 넣는다.
+  "vars": {
+    "MUSIC_GENERATION": "off"
+  },
   "observability": {
     "enabled": true
   }

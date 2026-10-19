@@ -3,10 +3,10 @@
 import Link from "next/link";
 import { useState } from "react";
 import LyricsSheet from "@/components/LyricsSheet";
-import MockPlayer from "@/components/MockPlayer";
+import SongPlayer from "@/components/SongPlayer";
 import type { GiftView } from "@/lib/db";
 
-export default function GiftReveal({ gift }: { gift: GiftView }) {
+export default function GiftReveal({ gift, token }: { gift: GiftView; token: string }) {
   const [opened, setOpened] = useState(false);
 
   if (!opened) {
@@ -34,7 +34,12 @@ export default function GiftReveal({ gift }: { gift: GiftView }) {
         </div>
       )}
       <div className="card">
-        <MockPlayer title={gift.title} subtitle={`${gift.callName}만을 위한 ${gift.genre}`} />
+        <SongPlayer
+          title={gift.title}
+          subtitle={`${gift.callName}만을 위한 ${gift.genre}`}
+          src={gift.hasAudio ? `/gift/${token}/audio` : null}
+          note={gift.hasAudio ? undefined : "노래를 마무리하고 있어요. 잠시 후 다시 열어 주세요."}
+        />
       </div>
       <div style={{ marginTop: 16 }}>
         <LyricsSheet lyrics={gift.lyrics} />
