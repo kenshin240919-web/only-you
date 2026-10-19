@@ -238,7 +238,16 @@ export default function SongsPage() {
       {hasCard && ready && lyrics.sections.length > 0 && (
         <div className="card stack" style={{ marginTop: 16 }}>
           <strong>가사 카드</strong>
-          <LyricsCard lyrics={{ ...lyrics, title }} to={callName(d)} owned />
+          <p className="muted" style={{ margin: 0, fontSize: 14 }}>
+            배경을 고른 뒤 이미지로 저장하세요. 카드의 QR 코드를 찍으면 이 노래의 선물 페이지가 열려요.
+          </p>
+          <LyricsCard
+            lyrics={{ ...lyrics, title }}
+            to={callName(d)}
+            message={d.message.trim()}
+            giftUrl={giftUrl}
+            giftEnabled={song.giftEnabled}
+          />
         </div>
       )}
 
