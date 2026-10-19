@@ -14,7 +14,7 @@ export default function GiftPage() {
 
   if (!order) return null;
   if (!order.paidAt || !order.lyrics) {
-    return <EmptyState title="선물을 찾을 수 없어요" desc="링크가 꺼졌거나 만료되었을 수 있어요." href="/" cta="Only You 둘러보기" />;
+    return <EmptyState title="선물을 찾을 수 없어요" desc="링크가 꺼졌거나 만료되었을 수 있어요." href="/" cta="Only U song 둘러보기" />;
   }
 
   const d = order.draft;
@@ -53,7 +53,7 @@ export default function GiftPage() {
       <div className="card" style={{ marginTop: 24, textAlign: "center" }}>
         <p style={{ margin: "0 0 12px" }}>나도 소중한 사람에게 노래를 선물하고 싶다면</p>
         <Link href="/" className="btn">
-          Only You 둘러보기
+          Only U song 둘러보기
         </Link>
       </div>
     </div>
