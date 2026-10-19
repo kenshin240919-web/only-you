@@ -57,7 +57,7 @@ export default function OrdersPage() {
       <div className="page-head">
         <h1>{done ? "노래가 완성됐어요!" : stopped ? "제작이 잠시 멈췄어요" : "노래를 만들고 있어요"}</h1>
         <p>
-          주문번호 {order.orderNo} · 완성되면 {order.draft.email}(으)로 알려 드려요. 이 창을 닫아도 제작은 계속돼요.
+          주문번호 {order.orderNo} · 이 창을 닫아도 제작은 계속되고, 완성된 노래는 '내 노래'에서 들을 수 있어요.
         </p>
       </div>
 
