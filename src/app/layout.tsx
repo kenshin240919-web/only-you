@@ -4,9 +4,20 @@ import Mascot from "@/components/Mascot";
 import { BUSINESS } from "@/lib/business";
 import "./globals.css";
 
+// 카카오톡·SNS에 링크를 보내면 보이는 미리보기 카드. 이미지는 public/og.png(1200×630).
 export const metadata: Metadata = {
+  metadataBase: new URL("https://song.guidejung.com"),
   title: "Only U song — 단 한 사람을 위한 노래",
   description: "소중한 사람의 이름과 추억을 담아 AI로 만드는 맞춤 노래 선물.",
+  openGraph: {
+    type: "website",
+    siteName: "Only U song",
+    locale: "ko_KR",
+    title: "Only U song — 단 한 사람을 위한 노래",
+    description: "이름과 추억을 들려주세요. 1분이면 그 사람만의 노래가 완성돼요.",
+    images: [{ url: "/og.png", width: 1200, height: 630, alt: "선글라스를 끼고 노래하는 말 캐릭터와 Only U song" }],
+  },
+  twitter: { card: "summary_large_image" },
 };
 
 export const viewport: Viewport = {
