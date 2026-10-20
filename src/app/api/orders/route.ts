@@ -10,6 +10,10 @@ import { parseDraft } from "@/lib/validate";
 
 const MAX_BODY = 32 * 1024;
 
+// 헷갈리는 글자(0·O·1·I)를 뺀 대문자와 숫자.
+const CODE = "23456789ABCDEFGHJKLMNPQRSTUVWXYZ";
+const randomCode = (n: number) => Array.from(crypto.getRandomValues(new Uint8Array(n)), (b) => CODE[b % CODE.length]).join("");
+
 // 주문을 만들고 노래(+ 고른 추가 상품)를 결제한다. 노래 제작은 결제가 확인된 뒤 시작한다.
 export async function POST(req: Request) {
   const text = await req.text();
@@ -33,7 +37,8 @@ export async function POST(req: Request) {
   const ownerToken = randomToken();
   const giftToken = randomToken();
   const now = new Date().toISOString();
-  const orderNo = `OY-${Date.now().toString(36).toUpperCase()}`;
+  // 주문 찾기에 쓰이므로 시각 뒤에 무작위 글자를 붙여 추측하기 어렵게 한다.
+  const orderNo = `OY-${Date.now().toString(36).toUpperCase()}-${randomCode(4)}`;
   // 가사는 결제 후 ElevenLabs가 노래와 함께 쓴다. 완성 전까지는 제목만 있는 빈 가사를 둔다.
   const lyrics = { title: songTitle(draft), sections: [] };
 

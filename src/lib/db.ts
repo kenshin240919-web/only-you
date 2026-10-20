@@ -98,6 +98,10 @@ const PURCHASES_SCHEMA = [
     created_at TEXT NOT NULL
   )`,
   "CREATE INDEX IF NOT EXISTS revisions_order ON revisions(order_id)",
+  // migrations/0006_order_access.sql
+  "CREATE TABLE IF NOT EXISTS order_access (token_hash TEXT PRIMARY KEY, order_id TEXT NOT NULL, created_at TEXT NOT NULL)",
+  "CREATE TABLE IF NOT EXISTS find_attempts (key TEXT NOT NULL, created_at TEXT NOT NULL)",
+  "CREATE INDEX IF NOT EXISTS find_attempts_key ON find_attempts(key, created_at)",
   // migrations/0005_generations.sql
   `CREATE TABLE IF NOT EXISTS generations (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -134,13 +138,16 @@ export async function hashToken(token: string): Promise<string> {
   return Array.from(new Uint8Array(digest), (b) => b.toString(16).padStart(2, "0")).join("");
 }
 
-/** 주문 소유자 토큰이 맞을 때만 주문을 돌려준다. */
+/** 주문 소유자 토큰이 맞을 때만 주문을 돌려준다. 주문 찾기로 다른 기기에 발급한 토큰도 받는다. */
 export async function getOwnedOrder(id: string, ownerToken: string | null): Promise<OrderRow | null> {
   if (!ownerToken) return null;
   const db = await getDb();
   const row = await db.prepare("SELECT * FROM orders WHERE id = ?").bind(id).first<OrderRow>();
   if (!row) return null;
-  return row.owner_token_hash === (await hashToken(ownerToken)) ? row : null;
+  const hash = await hashToken(ownerToken);
+  if (row.owner_token_hash === hash) return row;
+  const extra = await db.prepare("SELECT 1 FROM order_access WHERE token_hash = ? AND order_id = ?").bind(hash, id).first();
+  return extra ? row : null;
 }
 
 export type PaymentStatus = "ready" | "paid" | "cancelled";
