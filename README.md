@@ -28,6 +28,8 @@ npm run dev      # http://localhost:3000
 
 ## Cloudflare 배포
 
+사이트 주소는 **https://song.guidejung.com** 입니다(Worker 사용자 지정 도메인). 예전 `only-you.kenshin240919.workers.dev` 주소도 계속 열려 있습니다.
+
 Cloudflare Workers에 [OpenNext](https://opennext.js.org/cloudflare)로 배포합니다. 설정은 `wrangler.jsonc`, `open-next.config.ts`에 있습니다.
 
 ```bash
