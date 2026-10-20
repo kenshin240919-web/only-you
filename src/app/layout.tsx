@@ -8,8 +8,11 @@ import "./globals.css";
 // 카카오톡·SNS에 링크를 보내면 보이는 미리보기 카드. 이미지는 public/og.png(1200×630).
 export const metadata: Metadata = {
   metadataBase: new URL("https://song.guidejung.com"),
-  title: "Only U song — 단 한 사람을 위한 노래",
-  description: "소중한 사람의 이름과 추억을 담아 AI로 만드는 맞춤 노래 선물.",
+  // 다른 페이지는 제목만 정하면 " · Only U song"이 붙는다.
+  title: { default: "Only U song — 단 한 사람을 위한 노래", template: "%s · Only U song" },
+  description:
+    "엄마·아빠·연인·친구의 이름과 추억을 들려주면 AI가 가사와 노래를 1분 만에 만들어 드려요. 생일·환갑·기념일에 보내는 맞춤 노래 선물, 9,900원부터.",
+  keywords: ["노래 선물", "맞춤 노래", "AI 노래", "이름 넣은 노래", "생일 선물", "부모님 선물", "환갑 선물", "기념일 선물"],
   openGraph: {
     type: "website",
     siteName: "Only U song",

@@ -16,7 +16,7 @@ export async function generateMetadata({ params }: { params: Promise<{ token: st
   const title = gift ? `${gift.callName}에게 노래 선물이 도착했어요` : "노래 선물이 도착했어요";
   const description = gift ? `「${gift.title}」 · 눌러서 지금 들어 보세요.` : "단 한 사람을 위해 만든 노래예요.";
   return {
-    title: `${title} · Only U song`,
+    title,
     description,
     robots: { index: false, follow: false },
     openGraph: {

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { BUSINESS } from "@/lib/business";
 
-export const metadata: Metadata = { title: "개인정보처리방침 · Only U song" };
+export const metadata: Metadata = { title: "개인정보처리방침", alternates: { canonical: "/privacy" } };
 
 const COLLECT = [
   {

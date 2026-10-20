@@ -1,8 +1,11 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import Mascot from "@/components/Mascot";
 import SamplePlayer from "@/components/SamplePlayer";
 import { ADDON_PAIR, ALL_IN_ONE_LIST, MAX_REVISIONS, PAID_REVISIONS, PRICES, formatWon } from "@/lib/pricing";
 import { SAMPLES } from "@/lib/samples";
+
+export const metadata: Metadata = { alternates: { canonical: "/" } };
 
 const STEPS = [
   { title: "이야기 쓰기", desc: "8가지 질문에 답하면 돼요. 약 3~5분이면 충분해요." },

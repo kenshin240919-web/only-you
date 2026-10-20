@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { BUSINESS } from "@/lib/business";
 import { ADDON_PAIR, MAX_REVISIONS, PAID_REVISIONS, PRICES, formatWon } from "@/lib/pricing";
 
-export const metadata: Metadata = { title: "환불 정책 · Only U song" };
+export const metadata: Metadata = { title: "환불 정책", alternates: { canonical: "/refund" } };
 
 export default function RefundPage() {
   return (
