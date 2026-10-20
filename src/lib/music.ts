@@ -1,6 +1,7 @@
 import "server-only";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { getDb } from "./db";
+import { mailSongFailed, mailSongReady } from "./mail";
 import { type Draft, type LyricSection, type Lyrics, callName, reasonLabel, relationshipLabel } from "./draft";
 
 // 가사도 ElevenLabs가 사연을 받아 직접 쓴다(A안). 결정 근거와 Claude 가사(B안)로 바꾸는 방법은 docs/DECISIONS.md.
@@ -111,6 +112,15 @@ export type RevisionRequest = { genre?: string; vocal?: string; note?: string };
 export type GenerationKind = "first" | "revision" | "admin";
 
 async function generate(env: CloudflareEnv, orderId: string, draft: Draft, fallbackTitle: string, kind: GenerationKind, suffix = "", note = "") {
+  await produce(env, orderId, draft, fallbackTitle, kind, suffix, note);
+  // 결과를 주문자(완성)나 주문자·운영자(실패)에게 메일로 알린다. 메일이 꺼져 있으면 아무것도 하지 않는다.
+  const db = await getDb();
+  const song = await db.prepare("SELECT status FROM songs WHERE order_id = ?").bind(orderId).first<{ status: string }>();
+  if (song?.status === "ready") await mailSongReady(env, orderId, kind !== "first");
+  else if (song?.status === "failed") await mailSongFailed(env, orderId);
+}
+
+async function produce(env: CloudflareEnv, orderId: string, draft: Draft, fallbackTitle: string, kind: GenerationKind, suffix: string, note: string) {
   try {
     const db = await getDb();
     await db.prepare("INSERT INTO generations (order_id, kind, created_at) VALUES (?, ?, ?)").bind(orderId, kind, new Date().toISOString()).run();

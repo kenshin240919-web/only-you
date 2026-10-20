@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useOrder } from "@/components/useOrder";
 import { type Draft, EMPTY_DRAFT } from "@/lib/draft";
 
@@ -13,6 +13,12 @@ export default function FindPage() {
   const [email, setEmail] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+
+  // 완성 안내 메일의 링크(?no=주문번호)로 들어오면 주문번호를 미리 채운다.
+  useEffect(() => {
+    const no = new URLSearchParams(window.location.search).get("no");
+    if (no) setOrderNo(no.slice(0, 40));
+  }, []);
 
   const find = async (e: React.FormEvent) => {
     e.preventDefault();
