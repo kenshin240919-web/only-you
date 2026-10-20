@@ -107,8 +107,13 @@ async function finish(orderId: string, fields: Record<string, string | null>) {
 
 export type RevisionRequest = { genre?: string; vocal?: string; note?: string };
 
-async function generate(env: CloudflareEnv, orderId: string, draft: Draft, fallbackTitle: string, version = 0, note = "") {
+// 생성 1회마다 기록한다. 관리자 화면이 이번 달 ElevenLabs 사용량(곡당 2.5분)을 세는 근거다.
+export type GenerationKind = "first" | "revision" | "admin";
+
+async function generate(env: CloudflareEnv, orderId: string, draft: Draft, fallbackTitle: string, kind: GenerationKind, suffix = "", note = "") {
   try {
+    const db = await getDb();
+    await db.prepare("INSERT INTO generations (order_id, kind, created_at) VALUES (?, ?, ?)").bind(orderId, kind, new Date().toISOString()).run();
     const res = await fetch(ENDPOINT, {
       method: "POST",
       headers: { "xi-api-key": env.ELEVENLABS_API_KEY, "content-type": "application/json" },
@@ -123,8 +128,8 @@ async function generate(env: CloudflareEnv, orderId: string, draft: Draft, fallb
 
     const meta = (json ?? {}) as { composition_plan?: { chunks?: { text?: string }[] }; song_metadata?: { title?: string } };
     const title = meta.song_metadata?.title?.trim() || fallbackTitle;
-    // 수정본은 새 파일로 저장해 이전 버전을 덮어쓰지 않는다.
-    const key = version ? `songs/${orderId}-r${version}.mp3` : `songs/${orderId}.mp3`;
+    // 수정본·재제작본은 새 파일로 저장해 이전 버전을 덮어쓰지 않는다.
+    const key = suffix ? `songs/${orderId}-${suffix}.mp3` : `songs/${orderId}.mp3`;
     await env.SONGS.put(key, audio, { httpMetadata: { contentType: "audio/mpeg" } });
     await finish(orderId, {
       status: "ready",
@@ -153,23 +158,30 @@ export async function startSong(orderId: string, draft: Draft, fallbackTitle: st
     .run();
   if (!enabled || !claimed.meta.changes) return;
   // 응답을 보낸 뒤에도 생성이 이어지도록 waitUntil에 맡긴다. 보통 10~15초 걸린다.
-  ctx.waitUntil(generate(env, orderId, draft, fallbackTitle));
+  ctx.waitUntil(generate(env, orderId, draft, fallbackTitle, "first"));
 }
 
 /**
  * 완성된(또는 실패한) 노래를 수정 요청대로 다시 만든다. 같은 순간에 두 번 시작되지 않도록 상태로 잠근다.
  * 시작했으면 true. 생성이 꺼져 있거나 이미 만드는 중이면 false.
  */
-export async function reviseSong(orderId: string, draft: Draft, fallbackTitle: string, version: number, req: RevisionRequest): Promise<boolean> {
+export async function reviseSong(
+  orderId: string,
+  draft: Draft,
+  fallbackTitle: string,
+  suffix: string,
+  req: RevisionRequest,
+  kind: GenerationKind = "revision",
+): Promise<boolean> {
   const { env, ctx } = await getCloudflareContext({ async: true });
   if ((env.MUSIC_GENERATION as string) !== "on" || !env.ELEVENLABS_API_KEY) return false;
   const db = await getDb();
   const claimed = await db
-    .prepare("UPDATE songs SET status = 'generating', started_at = ?, error = NULL WHERE order_id = ? AND status IN ('ready', 'failed')")
+    .prepare("UPDATE songs SET status = 'generating', started_at = ?, finished_at = NULL, error = NULL WHERE order_id = ? AND status IN ('ready', 'failed')")
     .bind(new Date().toISOString(), orderId)
     .run();
   if (!claimed.meta.changes) return false;
   const revised = { ...draft, genre: req.genre || draft.genre, vocal: req.vocal || draft.vocal };
-  ctx.waitUntil(generate(env, orderId, revised, fallbackTitle, version, req.note ?? ""));
+  ctx.waitUntil(generate(env, orderId, revised, fallbackTitle, kind, suffix, req.note ?? ""));
   return true;
 }

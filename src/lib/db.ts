@@ -98,6 +98,13 @@ const PURCHASES_SCHEMA = [
     created_at TEXT NOT NULL
   )`,
   "CREATE INDEX IF NOT EXISTS revisions_order ON revisions(order_id)",
+  // migrations/0005_generations.sql
+  `CREATE TABLE IF NOT EXISTS generations (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    order_id TEXT NOT NULL,
+    kind TEXT NOT NULL,
+    created_at TEXT NOT NULL
+  )`,
 ];
 
 // 생성 요청이 이 시간 안에 끝나지 않으면 작업이 중단된 것으로 본다.

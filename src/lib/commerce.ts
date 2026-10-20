@@ -67,5 +67,5 @@ export async function startRevision(orderId: string, revisionId: string, draft: 
   if (!rev) return;
   await db.prepare("UPDATE revisions SET status = 'started' WHERE id = ?").bind(revisionId).run();
   const n = await db.prepare("SELECT count(*) AS n FROM revisions WHERE order_id = ? AND status = 'started'").bind(orderId).first<{ n: number }>();
-  await reviseSong(orderId, draft, title, n?.n ?? 1, JSON.parse(rev.request_json) as RevisionRequest);
+  await reviseSong(orderId, draft, title, `r${n?.n ?? 1}`, JSON.parse(rev.request_json) as RevisionRequest);
 }
