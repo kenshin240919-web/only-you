@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import AdminSources from "@/components/AdminSources";
 import LyricsSheet from "@/components/LyricsSheet";
 import type { Draft, Lyrics } from "@/lib/draft";
 import { genreLabel, reasonLabel, relationshipLabel } from "@/lib/draft";
@@ -222,6 +223,8 @@ export default function AdminPage() {
           </button>
         </div>
       )}
+
+      {summary && <AdminSources />}
 
       <p className="muted" style={{ margin: "0 0 12px", fontSize: 14 }}>
         <button

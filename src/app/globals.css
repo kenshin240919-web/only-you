@@ -1182,6 +1182,63 @@ button.stat {
   border: 2px solid var(--accent);
 }
 
+.admin-sources {
+  margin-bottom: 16px;
+}
+
+.admin-periods {
+  display: flex;
+  gap: 4px;
+}
+
+.admin-periods button {
+  font: inherit;
+  font-size: 13px;
+  padding: 4px 10px;
+  border-radius: 99px;
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--ink-soft);
+  cursor: pointer;
+}
+
+.admin-periods button.selected {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--on-accent);
+  font-weight: 700;
+}
+
+.admin-table-wrap {
+  overflow-x: auto;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.admin-table th,
+.admin-table td {
+  padding: 8px 4px;
+  border-bottom: 1px solid var(--line);
+  text-align: right;
+}
+
+.admin-table th:first-child,
+.admin-table td:first-child {
+  text-align: left;
+}
+
+.admin-table th {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+
 .admin-filter {
   display: flex;
   gap: 12px;

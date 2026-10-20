@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import EmptyState from "@/components/EmptyState";
 import PhoneField, { isPhone } from "@/components/PhoneField";
+import { currentSource } from "@/components/SourceTracker";
 import { usePaymentProvider } from "@/components/usePaymentProvider";
 import { useOrder } from "@/components/useOrder";
 import { callName, genreLabel, reasonLabel, relationshipLabel, songTitle } from "@/lib/draft";
@@ -51,7 +52,7 @@ export default function CheckoutPage() {
       const res = await fetch("/api/orders", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ draft: order.draft, addons, phone }),
+        body: JSON.stringify({ draft: order.draft, addons, phone, src: currentSource() }),
       });
       if (!res.ok) throw new Error(String(res.status));
       const saved = (await res.json()) as {

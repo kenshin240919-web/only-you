@@ -6,6 +6,7 @@ import { songTitle } from "@/lib/draft";
 import { payappEnabled } from "@/lib/payapp";
 import { parsePhone } from "@/lib/phone";
 import type { Item } from "@/lib/pricing";
+import { cleanSource } from "@/lib/source";
 import { parseDraft } from "@/lib/validate";
 
 const MAX_BODY = 32 * 1024;
@@ -19,7 +20,7 @@ export async function POST(req: Request) {
   const text = await req.text();
   if (text.length > MAX_BODY) return NextResponse.json({ error: "too_large" }, { status: 413 });
 
-  let body: { draft?: unknown; phone?: unknown; addons?: unknown };
+  let body: { draft?: unknown; phone?: unknown; addons?: unknown; src?: unknown };
   try {
     body = JSON.parse(text);
   } catch {
@@ -51,10 +52,13 @@ export async function POST(req: Request) {
     )
     .bind(id, await hashToken(ownerToken), giftToken, orderNo, draft.email.trim(), JSON.stringify(draft), JSON.stringify(lyrics), now, now)
     .run();
+  // 관리자 화면의 유입 경로별 집계에 쓴다.
+  const src = cleanSource(body.src);
+  if (src) await db.prepare("INSERT INTO order_sources (order_id, src) VALUES (?, ?)").bind(id, src).run();
 
   const purchase = await createPurchase(id, ["song", ...addons] as Item[], phone ?? "", new URL(req.url).origin, "orders");
   if (!purchase) {
-    await db.prepare("DELETE FROM orders WHERE id = ?").bind(id).run();
+    await db.batch([db.prepare("DELETE FROM orders WHERE id = ?").bind(id), db.prepare("DELETE FROM order_sources WHERE order_id = ?").bind(id)]);
     return NextResponse.json({ error: "payment_unavailable" }, { status: 502 });
   }
   return NextResponse.json(

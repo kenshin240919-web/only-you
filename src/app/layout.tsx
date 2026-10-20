@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import Link from "next/link";
 import Mascot from "@/components/Mascot";
+import SourceTracker from "@/components/SourceTracker";
 import { BUSINESS } from "@/lib/business";
 import "./globals.css";
 
@@ -38,6 +39,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@700&display=swap" />
       </head>
       <body>
+        <SourceTracker />
         <div className="proto-banner" role="note">
           시제품 화면입니다 · 실제 결제와 음악 제작은 이루어지지 않습니다
         </div>
