@@ -7,6 +7,9 @@ import { getDb } from "./db";
 
 type Mail = { to: string; subject: string; text: string; html: string };
 
+// 받는 사람 메일 앱에 "Only U song"으로 보이게 한다.
+const sender = (env: CloudflareEnv) => ({ email: env.MAIL_FROM as string, name: "Only U song" });
+
 export function mailEnabled(env: CloudflareEnv): boolean {
   return Boolean(env.EMAIL && env.MAIL_FROM);
 }
@@ -14,7 +17,7 @@ export function mailEnabled(env: CloudflareEnv): boolean {
 async function send(env: CloudflareEnv, m: Mail): Promise<void> {
   if (!env.EMAIL || !env.MAIL_FROM) return;
   try {
-    await env.EMAIL.send({ from: env.MAIL_FROM, to: m.to, subject: m.subject, text: m.text, html: m.html, replyTo: BUSINESS.email });
+    await env.EMAIL.send({ from: sender(env), to: m.to, subject: m.subject, text: m.text, html: m.html, replyTo: BUSINESS.email });
   } catch (e) {
     console.error("mail send failed", m.subject, e);
   }
@@ -48,6 +51,25 @@ async function orderInfo(orderId: string): Promise<OrderInfo | null> {
     )
     .bind(orderId)
     .first<OrderInfo>();
+}
+
+/** 관리자 화면의 시험 발송. 운영자 메일(ADMIN_EMAIL)로 보낸다. 보냈으면 true. */
+export async function mailTest(env: CloudflareEnv): Promise<boolean> {
+  if (!mailEnabled(env) || !env.ADMIN_EMAIL) return false;
+  try {
+    await env.EMAIL!.send({
+      from: sender(env),
+      to: env.ADMIN_EMAIL,
+      subject: "[Only U song] 알림 메일 시험 발송",
+      html: layout("알림 메일이 잘 도착했어요", ["관리자 화면에서 보낸 시험 메일이에요. 노래 완성·제작 실패 알림도 이 주소에서 발송돼요."]),
+      text: "관리자 화면에서 보낸 시험 메일이에요. 노래 완성·제작 실패 알림도 이 주소에서 발송돼요.",
+      replyTo: BUSINESS.email,
+    });
+    return true;
+  } catch (e) {
+    console.error("test mail failed", e);
+    return false;
+  }
 }
 
 /** 노래가 완성됐을 때 주문자에게 알린다. 처음 완성과 수정본 완성을 구분해 쓴다. */

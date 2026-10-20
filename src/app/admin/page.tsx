@@ -74,6 +74,7 @@ export default function AdminPage() {
   const [regen, setRegen] = useState({ genre: "", vocal: "", note: "" });
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
+  const [mailMsg, setMailMsg] = useState("");
 
   useEffect(() => {
     fetch("/api/admin/login")
@@ -211,6 +212,22 @@ export default function AdminPage() {
           </button>
         </div>
       )}
+
+      <p className="muted" style={{ margin: "0 0 12px", fontSize: 14 }}>
+        <button
+          type="button"
+          className="link-btn"
+          onClick={async () => {
+            setMailMsg("보내는 중…");
+            const r = await fetch("/api/admin/test-mail", { method: "POST" });
+            const d = (await r.json().catch(() => ({}))) as { message?: string };
+            setMailMsg(d.message ?? "보내지 못했어요.");
+          }}
+        >
+          알림 메일 시험 발송
+        </button>
+        {mailMsg && ` · ${mailMsg}`}
+      </p>
 
       <div className="admin-filter">
         <input id="admin-q" className="input" placeholder="주문번호나 이메일로 찾기" value={q} onChange={(e) => setQ(e.target.value)} />

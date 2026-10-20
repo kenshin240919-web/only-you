@@ -36,10 +36,12 @@
     // 메일·링크에 쓰는 사이트 주소(정식 도메인). 예전 workers.dev 주소도 계속 열어 둔다(이미 저장된 가사 카드 QR).
     "SITE_URL": "https://song.guidejung.com",
     // 알림 메일 보내는 주소(이메일 서비스에 등록한 도메인). 비어 있으면 메일을 보내지 않는다.
-    "MAIL_FROM": "",
+    "MAIL_FROM": "noreply@song.guidejung.com",
     // 제작 실패를 알려 받을 운영자 메일.
     "ADMIN_EMAIL": "lbkneon275@naver.com"
   },
+  // 알림 메일 발송(Cloudflare Email Service, song.guidejung.com 등록 2026-10-20).
+  "send_email": [{ "name": "EMAIL" }],
   "observability": {
     "enabled": true
   }
