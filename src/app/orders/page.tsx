@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import EmptyState from "@/components/EmptyState";
+import Mascot from "@/components/Mascot";
 import { useOrder } from "@/components/useOrder";
 
 type SongStatus = "generating" | "ready" | "failed" | "disabled" | "none";
@@ -94,6 +95,9 @@ export default function OrdersPage() {
           주문번호 {order.orderNo} · 이 창을 닫아도 제작은 계속되고, 완성된 노래는 &lsquo;내 노래&rsquo;에서 들을 수 있어요.
         </p>
       </div>
+
+      {/* 만드는 동안은 캐릭터가 노래하고, 완성되면 멈춘 채 축하한다. */}
+      <Mascot size={160} live={!done && !stopped} className="orders-mascot" />
 
       <ol className="status-steps" aria-live="polite">
         {STAGES.map((s, i) => (
