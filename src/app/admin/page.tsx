@@ -14,8 +14,12 @@ type Summary = {
   paymentsToday: number;
   revenueMonth: number;
   paymentsMonth: number;
-  generationsMonth: number;
-  musicMinutesMonth: number;
+  cycleStart: string;
+  cycleNext: string;
+  generationsCycle: number;
+  creditsCycle: number;
+  planCredits: number;
+  songsLeft: number;
   songs: Record<string, number>;
 };
 
@@ -56,8 +60,6 @@ const SONG_STATUS: Record<string, string> = {
   none: "제작 전",
 };
 const PAY_STATUS: Record<string, string> = { ready: "결제 대기", paid: "결제 완료", cancelled: "취소" };
-// 스타터 플랜의 음악 포함 분량. 요금 페이지마다 표기가 달라(약 33분 또는 40분) 낮은 값을 기준으로 경고한다.
-const STARTER_MINUTES = 33;
 
 const kst = (iso: string | null) =>
   iso ? new Date(iso).toLocaleString("ko-KR", { timeZone: "Asia/Seoul", month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit" }) : "-";
@@ -163,7 +165,9 @@ export default function AdminPage() {
     );
   }
 
-  const usageWarn = (summary?.musicMinutesMonth ?? 0) >= STARTER_MINUTES * 0.8;
+  // 요금제 크레딧의 80%를 넘으면 강조한다.
+  const usageWarn = summary ? summary.creditsCycle >= summary.planCredits * 0.8 : false;
+  const day = (iso: string) => new Date(iso).toLocaleDateString("ko-KR", { timeZone: "Asia/Seoul", month: "numeric", day: "numeric" });
   const failed = summary?.songs.failed ?? 0;
 
   return (
@@ -199,10 +203,16 @@ export default function AdminPage() {
             </small>
           </div>
           <div className={usageWarn ? "card stat warn" : "card stat"}>
-            <span>이번 달 ElevenLabs 사용</span>
-            <strong>{summary.musicMinutesMonth}분</strong>
+            <span>ElevenLabs 사용 (이번 요금제 주기)</span>
+            <strong>
+              {summary.creditsCycle.toLocaleString("ko-KR")}
+              <small className="muted" style={{ fontSize: 14, fontWeight: 600 }}>
+                {" "}
+                / {summary.planCredits.toLocaleString("ko-KR")}크레딧
+              </small>
+            </strong>
             <small className="muted">
-              생성 {summary.generationsMonth}회 · 스타터 포함 약 {STARTER_MINUTES}~40분
+              {day(summary.cycleStart)}~{day(summary.cycleNext)} · 생성 {summary.generationsCycle}회 · 남은 약 {summary.songsLeft}곡 (추정)
             </small>
           </div>
           <button type="button" className={failed ? "card stat warn" : "card stat"} onClick={() => setFailedOnly(true)}>

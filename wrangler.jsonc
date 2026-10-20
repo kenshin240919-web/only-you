@@ -38,7 +38,12 @@
     // 알림 메일 보내는 주소(이메일 서비스에 등록한 도메인). 비어 있으면 메일을 보내지 않는다.
     "MAIL_FROM": "noreply@song.guidejung.com",
     // 제작 실패를 알려 받을 운영자 메일.
-    "ADMIN_EMAIL": "lbkneon275@naver.com"
+    "ADMIN_EMAIL": "lbkneon275@naver.com",
+    // ElevenLabs 요금제의 월 크레딧과 갱신일(매월 며칠). 관리자 화면의 사용량 경고에 쓴다. 요금제를 바꾸면 함께 바꾼다.
+    "MUSIC_PLAN_CREDITS": "40000",
+    "MUSIC_CYCLE_DAY": "19",
+    // 생성 기록을 남기기 전(2026-10-20 이전)에 이번 주기에서 이미 쓴 크레딧. 그 주기에만 더하고, 다음 주기부터는 무시된다.
+    "MUSIC_CREDITS_BEFORE_LOG": "21000"
   },
   // 알림 메일 발송(Cloudflare Email Service, song.guidejung.com 등록 2026-10-20).
   "send_email": [{ "name": "EMAIL" }],
