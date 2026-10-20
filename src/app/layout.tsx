@@ -56,6 +56,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 <strong>개인정보처리방침</strong>
               </Link>
               <Link href="/refund">환불 정책</Link>
+              <Link href="/find">주문 찾기</Link>
             </p>
             <p className="muted">
               상호 {BUSINESS.name} · 대표자 {BUSINESS.owner} · 사업자등록번호 {BUSINESS.regNo}

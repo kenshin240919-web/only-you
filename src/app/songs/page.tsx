@@ -101,7 +101,14 @@ export default function SongsPage() {
     return <EmptyState title="노래를 불러오지 못했어요" desc="잠시 후 다시 시도해 주세요." href="/songs" cta="다시 시도" />;
   }
   if (status === "missing" || !song) {
-    return <EmptyState title="아직 완성된 노래가 없어요" desc="첫 노래를 만들어 보세요." href="/create" cta="노래 만들기" />;
+    return (
+      <EmptyState
+        title="이 기기에 저장된 노래가 없어요"
+        desc="다른 기기에서 주문하셨다면 주문번호와 이메일로 찾을 수 있어요."
+        href="/find"
+        cta="주문 찾기"
+      />
+    );
   }
   if (song.payment !== "paid") {
     return <EmptyState title="결제가 확인되지 않은 주문이에요" desc="주문 상태를 확인해 주세요." href="/orders" cta="주문 상태 보기" />;
