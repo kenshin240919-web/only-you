@@ -3,7 +3,7 @@ import Link from "next/link";
 import { BUSINESS } from "@/lib/business";
 import { ADDON_PAIR, MAX_REVISIONS, PAID_REVISIONS, PRICES, formatWon } from "@/lib/pricing";
 
-export const metadata: Metadata = { title: "이용약관 · Only U song" };
+export const metadata: Metadata = { title: "이용약관", alternates: { canonical: "/terms" } };
 
 export default function TermsPage() {
   return (
