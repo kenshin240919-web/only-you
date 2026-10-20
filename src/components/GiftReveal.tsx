@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import LyricsSheet from "@/components/LyricsSheet";
+import Mascot from "@/components/Mascot";
 import SongPlayer from "@/components/SongPlayer";
 import type { GiftView } from "@/lib/db";
 
@@ -13,6 +14,7 @@ export default function GiftReveal({ gift, token }: { gift: GiftView; token: str
     return (
       <div className="container gift-page">
         <div style={{ textAlign: "center" }}>
+          <Mascot size={150} live className="gift-mascot" />
           <p className="muted">누군가 당신을 위해 노래를 만들었어요</p>
           <h1 style={{ fontSize: 28, margin: "0 0 28px" }}>{gift.callName}에게 온 선물</h1>
           <button type="button" className="envelope" onClick={() => setOpened(true)} aria-label="선물 열기">

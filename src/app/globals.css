@@ -1,17 +1,22 @@
+/* 무대 조명 테마: 남색 무대 + 금색 조명, 보조색 산호(음표). 2026-10-20 */
 :root {
-  --bg: #fbf6ef;
-  --surface: #ffffff;
-  --surface-soft: #f5ece0;
-  --ink: #1f2a44;
-  --ink-soft: #55607a;
-  --muted: #8a8f9c;
-  --line: #e8dccb;
-  --accent: #e8735f;
-  --accent-dark: #c9573f;
-  --accent-soft: #fde6df;
-  --ok: #2f8a5b;
+  color-scheme: dark;
+  --bg: #141833;
+  --surface: #1d2247;
+  --surface-soft: #262c5c;
+  --ink: #fff6e6;
+  --ink-soft: #cfc8e8;
+  --muted: #9e98be;
+  --line: #363c70;
+  --accent: #f5c24b;
+  --accent-dark: #e3a92f;
+  --accent-soft: rgba(245, 194, 75, 0.14);
+  --on-accent: #141833;
+  --coral: #ff8a73;
+  --danger: #ff9c8a;
+  --ok: #5fd39a;
   --radius: 16px;
-  --shadow: 0 6px 24px rgba(31, 42, 68, 0.08);
+  --shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
   --font: "Pretendard Variable", Pretendard, -apple-system, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
   --serif: "Nanum Myeongjo", "AppleMyungjo", "Noto Serif KR", serif;
 }
@@ -59,8 +64,8 @@ textarea {
 }
 
 .proto-banner {
-  background: var(--ink);
-  color: #fff;
+  background: #0d1026;
+  color: var(--ink-soft);
   text-align: center;
   font-size: 13px;
   padding: 6px 12px;
@@ -71,7 +76,7 @@ textarea {
   position: sticky;
   top: 0;
   z-index: 10;
-  background: rgba(251, 246, 239, 0.92);
+  background: rgba(20, 24, 51, 0.88);
   backdrop-filter: blur(8px);
   border-bottom: 1px solid var(--line);
 }
@@ -94,14 +99,9 @@ textarea {
 }
 
 .logo-mark {
-  display: inline-grid;
-  place-items: center;
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  background: var(--accent);
-  color: #fff;
-  font-size: 16px;
+  display: inline-block;
+  width: 36px;
+  height: 36px;
 }
 
 .header-nav {
@@ -139,8 +139,8 @@ textarea {
   border: none;
   border-radius: 999px;
   background: var(--accent);
-  color: #fff;
-  font-weight: 700;
+  color: var(--on-accent);
+  font-weight: 800;
   font-size: 17px;
   text-decoration: none;
   cursor: pointer;
@@ -152,7 +152,8 @@ textarea {
 }
 
 .btn:disabled {
-  background: #d9cfc3;
+  background: #3a3f6a;
+  color: #8a86a8;
   cursor: not-allowed;
 }
 
@@ -310,8 +311,8 @@ textarea {
   height: 44px;
   border-radius: 50%;
   border: none;
-  background: var(--ink);
-  color: #fff;
+  background: var(--accent);
+  color: var(--on-accent);
   font-size: 16px;
   cursor: pointer;
 }
@@ -469,7 +470,7 @@ textarea {
 }
 
 .choice:hover {
-  border-color: #d8c4a9;
+  border-color: #5a6098;
 }
 
 .choice[aria-pressed="true"],
@@ -515,6 +516,8 @@ textarea {
   border: 2px solid var(--line);
   border-radius: 12px;
   background: var(--surface);
+  color: var(--ink);
+  font: inherit;
   font-size: 16px;
 }
 
@@ -526,7 +529,7 @@ textarea {
 .input:focus,
 .textarea:focus {
   outline: none;
-  border-color: var(--ink);
+  border-color: var(--accent);
 }
 
 .field-meta {
@@ -538,7 +541,7 @@ textarea {
 }
 
 .field-error {
-  color: var(--accent-dark);
+  color: var(--danger);
 }
 
 .tip {
@@ -564,7 +567,7 @@ textarea {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(251, 246, 239, 0.96);
+  background: rgba(20, 24, 51, 0.96);
   border-top: 1px solid var(--line);
   padding: 12px 0 calc(12px + env(safe-area-inset-bottom));
 }
@@ -678,7 +681,7 @@ textarea {
 }
 
 .mark {
-  background: linear-gradient(transparent 60%, #ffd9cc 60%);
+  background: linear-gradient(transparent 60%, rgba(245, 194, 75, 0.35) 60%);
 }
 
 .actions-row {
@@ -692,8 +695,8 @@ textarea {
   border-radius: 12px;
   padding: 14px 16px;
   font-size: 14px;
-  background: #eef4ff;
-  color: #2c3e66;
+  background: rgba(130, 150, 255, 0.12);
+  color: #cfd8ff;
   margin: 16px 0;
 }
 
@@ -736,7 +739,7 @@ textarea {
 .status-steps li.done .status-dot {
   background: var(--ok);
   border-color: var(--ok);
-  color: #fff;
+  color: var(--on-accent);
 }
 
 /* Player */
@@ -752,7 +755,9 @@ textarea {
   width: min(280px, 80vw);
   aspect-ratio: 1 / 1;
   border-radius: 20px;
-  background: linear-gradient(135deg, #f6b5a4, #e8735f 55%, #1f2a44);
+  background:
+    radial-gradient(ellipse 70% 60% at 50% 0, rgba(245, 194, 75, 0.55), transparent 70%),
+    linear-gradient(160deg, #3a2c6e, #1b2147);
   display: grid;
   place-items: center;
   color: #fff;
@@ -783,7 +788,8 @@ textarea {
   aspect-ratio: 4 / 3;
   border: none;
   border-radius: 16px;
-  background: linear-gradient(160deg, #fff, #f5ece0);
+  background: linear-gradient(160deg, #2b3166, #1d2247);
+  color: var(--ink);
   box-shadow: var(--shadow);
   cursor: pointer;
   position: relative;
@@ -816,7 +822,7 @@ textarea {
   height: 52px;
   border-radius: 50%;
   background: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
   display: grid;
   place-items: center;
   font-size: 22px;
@@ -938,10 +944,11 @@ textarea {
   border-radius: 24px;
   padding: 40px 28px;
   text-align: center;
-  color: #fff;
+  color: var(--ink);
+  border: 1px solid var(--line);
   background:
-    radial-gradient(circle at 85% 15%, rgba(255, 255, 255, 0.18), transparent 40%),
-    linear-gradient(140deg, var(--accent-dark), var(--accent) 55%, #f29a7a);
+    radial-gradient(ellipse 55% 60% at 50% 0, rgba(245, 194, 75, 0.32), transparent 70%),
+    linear-gradient(#232a5c, #1a1f45);
   box-shadow: var(--shadow);
 }
 
@@ -986,7 +993,13 @@ textarea {
   gap: 2px;
   padding: 14px 12px;
   border-radius: 14px;
-  background: rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--line);
+}
+
+.poster-facts strong,
+.poster-num {
+  color: var(--accent);
 }
 
 .poster-facts strong {
@@ -999,8 +1012,7 @@ textarea {
 }
 
 .poster .btn {
-  background: #fff;
-  color: var(--accent-dark);
+  box-shadow: 0 0 24px rgba(245, 194, 75, 0.45);
 }
 
 /* Pricing */
@@ -1038,7 +1050,7 @@ textarea {
   padding: 2px 12px;
   border-radius: 999px;
   background: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
   font-size: 12px;
   font-weight: 700;
   white-space: nowrap;
@@ -1121,7 +1133,7 @@ textarea {
   width: 24px;
   height: 24px;
   border-radius: 50%;
-  border: 1px solid rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.18);
 }
 
 /* Admin */
@@ -1261,25 +1273,25 @@ button.stat {
 .song-none,
 .song-disabled,
 .pay-cancelled {
-  background: #eceae6;
+  background: #2b3060;
   color: var(--ink-soft);
 }
 
 .song-ready,
 .pay-paid {
-  background: #e3f3ea;
+  background: rgba(95, 211, 154, 0.15);
   color: var(--ok);
 }
 
 .song-failed {
-  background: #fde2de;
-  color: #b4361f;
+  background: rgba(255, 120, 100, 0.15);
+  color: var(--danger);
 }
 
 .song-generating,
 .pay-ready {
-  background: #eef4ff;
-  color: #2c3e66;
+  background: rgba(130, 150, 255, 0.15);
+  color: #b8c4ff;
 }
 
 .admin-dl {
@@ -1322,4 +1334,152 @@ button.stat {
   padding-left: 18px;
   font-size: 14px;
   color: var(--ink-soft);
+}
+
+/* Mascot */
+.mascot {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+.mascot-live .mascot-body {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: mascot-sway 1.6s ease-in-out infinite;
+}
+
+.mascot-live .mascot-mouth {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: mascot-sing 0.8s ease-in-out infinite;
+}
+
+.mascot-live .mascot-note {
+  animation: mascot-note 2.4s ease-in infinite;
+}
+
+.mascot-live .n2 {
+  animation-delay: 0.8s;
+}
+
+.mascot-live .n3 {
+  animation-delay: 1.6s;
+}
+
+@keyframes mascot-sway {
+  0%,
+  100% {
+    transform: translate(20px, 22px) rotate(-3deg);
+  }
+  50% {
+    transform: translate(20px, 18px) rotate(3deg);
+  }
+}
+
+@keyframes mascot-sing {
+  0%,
+  100% {
+    transform: scaleY(0.75);
+  }
+  50% {
+    transform: scaleY(1.1);
+  }
+}
+
+@keyframes mascot-note {
+  0% {
+    transform: translateY(10px);
+    opacity: 0;
+  }
+  25% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-24px);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mascot-live .mascot-body,
+  .mascot-live .mascot-mouth,
+  .mascot-live .mascot-note {
+    animation: none;
+  }
+}
+
+/* Stage hero */
+.stage-hero {
+  position: relative;
+  overflow: hidden;
+  padding: 20px 0 64px;
+  text-align: center;
+  background:
+    radial-gradient(ellipse 50% 70% at 50% 0, rgba(245, 194, 75, 0.38), transparent 72%),
+    linear-gradient(#1b2147, var(--bg));
+}
+
+.stage-hero::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 36px;
+  background: repeating-linear-gradient(90deg, #3a2c5c 0 18px, #33274f 18px 36px);
+  opacity: 0.6;
+}
+
+.stage-tag {
+  display: inline-block;
+  padding: 4px 12px;
+  border: 1px solid var(--accent);
+  border-radius: 999px;
+  color: var(--accent);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.stage-hero .mascot {
+  margin: 8px auto 4px;
+  filter: drop-shadow(0 10px 30px rgba(245, 194, 75, 0.35));
+}
+
+.stage-hero h1 {
+  font-size: clamp(30px, 7vw, 48px);
+  line-height: 1.25;
+  letter-spacing: -0.03em;
+  margin: 0 0 12px;
+}
+
+.stage-hero h1 em {
+  font-style: normal;
+  color: var(--accent);
+}
+
+.stage-hero p {
+  color: var(--ink-soft);
+  font-size: 17px;
+  margin: 0 auto 28px;
+  max-width: 520px;
+}
+
+.stage-hero .btn {
+  box-shadow: 0 0 24px rgba(245, 194, 75, 0.5);
+}
+
+.empty-mascot {
+  margin: 0 0 8px;
+}
+
+.orders-mascot,
+.gift-mascot {
+  margin: 8px auto;
+}
+
+/* 단계가 바뀔 때 읽기 순서를 위해 제목에 초점을 옮기지만, 테두리는 보이지 않게 한다. */
+.step-title:focus {
+  outline: none;
 }

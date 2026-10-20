@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Mascot from "@/components/Mascot";
 import SamplePlayer from "@/components/SamplePlayer";
 import { ADDON_PAIR, ALL_IN_ONE_LIST, MAX_REVISIONS, PAID_REVISIONS, PRICES, formatWon } from "@/lib/pricing";
 import { SAMPLES } from "@/lib/samples";
@@ -51,20 +52,23 @@ const FAQ = [
 export default function Home() {
   return (
     <>
-      <section className="hero container">
-        <span className="eyebrow">이름과 추억으로 만드는 단 하나의 노래</span>
-        <h1>
-          세상에 단 한 사람,
-          <br />
-          <em>당신만을 위한 노래</em>
-        </h1>
-        <p>말로 다 못한 마음을 이야기로 들려주세요. 그 사람의 이름과 추억이 담긴 노래로 만들어 드릴게요.</p>
-        <Link href="/create" className="btn">
-          노래 만들기 시작 →
-        </Link>
-        <p className="hero-meta">
-          {formatWon(PRICES.song)}부터 · 올인원 {formatWon(PRICES.bundle)} · AI로 제작합니다
-        </p>
+      <section className="stage-hero">
+        <div className="container">
+          <span className="stage-tag">ON STAGE</span>
+          <Mascot size={220} live />
+          <h1>
+            세상에 단 한 사람,
+            <br />
+            <em>당신만을 위한 노래</em>
+          </h1>
+          <p>이름과 추억을 들려주세요. 무대 위 가수가 그 사람만을 위한 노래로 불러 드릴게요.</p>
+          <Link href="/create" className="btn">
+            노래 만들기 시작 →
+          </Link>
+          <p className="hero-meta">
+            {formatWon(PRICES.song)}부터 · 올인원 {formatWon(PRICES.bundle)} · AI로 제작합니다
+          </p>
+        </div>
       </section>
 
       <section className="container" aria-label="Only U song 한눈에 보기">
