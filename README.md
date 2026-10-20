@@ -96,7 +96,8 @@ Workers 유료 플랜에 월 3,000통이 포함된 Cloudflare Email Service로 �
 
 - 노래 완성: 주문자에게 주문번호, `/find?no=주문번호` 링크(다른 기기에서 열기), 선물 링크(켜져 있을 때). 수정본·재제작본이 완성돼도 보냅니다.
 - 제작 실패: 주문자에게 "확인 후 다시 만들어 드림" 안내, 운영자(`ADMIN_EMAIL`)에게 오류 내용과 관리자 화면 링크.
-- **기본은 꺼져 있습니다.** 켜려면:
+- **2026-10-20 켬**: 보내는 주소 `noreply@song.guidejung.com`(이메일 서비스에 `song.guidejung.com` 등록, DKIM·SPF·DMARC 확인). 관리자 화면의 '알림 메일 시험 발송'으로 `ADMIN_EMAIL`에 시험 메일을 보낼 수 있습니다.
+- 다른 도메인으로 바꾸려면:
   1. Cloudflare 대시보드 → 이메일 서비스에서 보내는 도메인(정식 도메인)을 등록하고 안내되는 DNS 레코드를 추가
   2. `wrangler.jsonc`에 `"send_email": [{ "name": "EMAIL" }]`를 추가하고 `vars.MAIL_FROM`을 그 도메인 주소(예: `noreply@도메인`)로, `vars.SITE_URL`을 정식 주소로 바꿔 배포
 - 메일 발송이 실패해도 주문·제작은 그대로 진행됩니다(로그에만 남음).
