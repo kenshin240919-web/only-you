@@ -109,6 +109,9 @@ const PURCHASES_SCHEMA = [
     kind TEXT NOT NULL,
     created_at TEXT NOT NULL
   )`,
+  // migrations/0007_sources.sql
+  "CREATE TABLE IF NOT EXISTS visits (day TEXT NOT NULL, src TEXT NOT NULL, n INTEGER NOT NULL, PRIMARY KEY (day, src))",
+  "CREATE TABLE IF NOT EXISTS order_sources (order_id TEXT PRIMARY KEY, src TEXT NOT NULL)",
 ];
 
 // 생성 요청이 이 시간 안에 끝나지 않으면 작업이 중단된 것으로 본다.
