@@ -426,7 +426,7 @@ export default function CreatePage() {
               />
               <span>(선택) 할인·이벤트 소식을 이메일로 받겠습니다.</span>
             </label>
-            <p className="notice">시제품에서는 이메일 인증 단계를 생략해요. 입력 내용은 결제 전까지 이 기기에만 7일간 저장되고, 결제하면 노래 제작을 위해 서버에 저장돼요.</p>
+            <p className="notice">입력 내용은 결제 전까지 이 기기에만 7일간 저장되고, 결제하면 노래 제작을 위해 서버에 저장돼요.</p>
           </section>
         )}
 

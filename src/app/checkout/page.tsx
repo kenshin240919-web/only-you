@@ -163,6 +163,9 @@ export default function CheckoutPage() {
           <PhoneField id="phone" value={phone} onChange={setPhone} />
         </div>
       )}
+      {provider === "unavailable" && (
+        <div className="notice">지금은 결제를 받을 수 없어요. 잠시 후 다시 시도해 주세요.</div>
+      )}
       {provider === "mock" && (
         <div className="notice">시제품이라 실제 결제는 이루어지지 않습니다. 버튼을 누르면 결제가 완료된 것처럼 진행돼요.</div>
       )}
@@ -175,7 +178,7 @@ export default function CheckoutPage() {
       <button
         type="button"
         className="btn btn-block"
-        disabled={!agree || paying || !provider || (provider === "payapp" && !isPhone(phone))}
+        disabled={!agree || paying || !provider || provider === "unavailable" || (provider === "payapp" && !isPhone(phone))}
         onClick={pay}
       >
         {paying ? "결제 준비 중…" : `${formatWon(total)} 결제하고 제작 시작`}

@@ -3,7 +3,7 @@ import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { type OrderRow, getDb, randomToken } from "./db";
 import type { Draft, Lyrics } from "./draft";
 import { type RevisionRequest, reviseSong, startSong } from "./music";
-import { payappEnabled, requestPayment } from "./payapp";
+import { paymentProvider, requestPayment } from "./payapp";
 import { type Item, goodName, priceOf } from "./pricing";
 
 // 주문 하나에 여러 번 결제한다(처음 주문, MP3·가사 카드 추가, 유료 수정).
@@ -21,7 +21,9 @@ export async function createPurchase(
   id = `pur_${randomToken(16)}`,
 ): Promise<PurchaseResult> {
   const { env } = await getCloudflareContext({ async: true });
-  const payapp = payappEnabled(env);
+  const provider = paymentProvider(env);
+  if (provider === "unavailable") return null;
+  const payapp = provider === "payapp";
   const db = await getDb();
   const amount = priceOf(items);
   const now = new Date().toISOString();

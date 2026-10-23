@@ -1,10 +1,19 @@
 import "server-only";
 
-// 페이앱 건별 결제. saju.guidejung.com과 같은 판매자 계정·방식(결제 요청 → 결제창 → feedbackurl 알림)을 쓴다.
+// 페이앱 건별 결제. saju.guidejung.com과 같은 방식(결제 요청 → 결제창 → feedbackurl 알림)이고, 판매자 계정은 따로(onlyusong) 쓴다.
 // 금액은 서버가 정하고, 결제 완료는 페이앱 알림(/api/payapp/feedback)에서 연동값·결제요청번호·금액이 모두 맞을 때만 인정한다.
 
+export type PaymentProvider = "payapp" | "mock" | "unavailable";
+
+// 모의 결제는 PAYMENT_MODE가 정확히 "mock"일 때만 쓴다. 실제 결제 모드인데 연동값이 빠졌으면
+// 결제 없이 주문이 통과되지 않도록 결제를 받지 않는다(unavailable).
+export function paymentProvider(env: CloudflareEnv): PaymentProvider {
+  if ((env.PAYMENT_MODE as string) === "mock") return "mock";
+  return env.PAYAPP_USERID && env.PAYAPP_LINKKEY && env.PAYAPP_LINKVAL ? "payapp" : "unavailable";
+}
+
 export function payappEnabled(env: CloudflareEnv): boolean {
-  return (env.PAYMENT_MODE as string) === "payapp" && Boolean(env.PAYAPP_USERID && env.PAYAPP_LINKKEY && env.PAYAPP_LINKVAL);
+  return paymentProvider(env) === "payapp";
 }
 
 export type PayRequest = { purchaseId: string; amount: number; goodname: string; phone: string; origin: string; back: "orders" | "songs" };
