@@ -43,9 +43,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body>
         <SourceTracker />
-        <div className="proto-banner" role="note">
-          시제품 화면입니다 · 실제 결제와 음악 제작은 이루어지지 않습니다
-        </div>
         <header className="site-header">
           <div className="container header-inner">
             <Link href="/" className="logo" aria-label="Only U song 홈">

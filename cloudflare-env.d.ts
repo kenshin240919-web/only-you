@@ -6,8 +6,8 @@ interface __BaseEnv_CloudflareEnv {
 	DB: D1Database;
 	EMAIL: SendEmail;
 	ASSETS: Fetcher;
-	MUSIC_GENERATION: "off";
-	PAYMENT_MODE: "mock";
+	MUSIC_GENERATION: "on";
+	PAYMENT_MODE: "payapp";
 	SITE_URL: "https://song.guidejung.com";
 	MAIL_FROM: "noreply@song.guidejung.com";
 	ADMIN_EMAIL: "lbkneon275@naver.com";

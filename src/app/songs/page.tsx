@@ -122,7 +122,8 @@ export default function SongsPage() {
   const hasMp3 = song.owned.includes("mp3");
   const hasCard = song.owned.includes("card");
   const needPhone = provider === "payapp";
-  const phoneOk = !needPhone || isPhone(phone);
+  // 결제를 받을 수 없는 동안(연동값 누락 등)은 유료 버튼을 막는다.
+  const phoneOk = provider !== "unavailable" && (!needPhone || isPhone(phone));
   const note = generating
     ? "노래를 만들고 있어요. 보통 1분 안에 끝나요."
     : ready
