@@ -24,6 +24,8 @@ type ServerOrder = {
   lyrics: Lyrics;
   payment: "ready" | "paid" | "cancelled";
   owned: Item[];
+  /** 후기 혜택으로 받은 상품을 뺀 목록(올인원 혜택 판단용). */
+  bought: Item[];
   pendingPurchase: boolean;
   revisions: { used: number; max: number; freeLeft: number };
   song: { status: SongStatus; title: string | null; lyrics: Lyrics | null; version: string | null };
@@ -267,7 +269,7 @@ export default function SongsPage() {
           <strong>노래 수정</strong>
           <p className="muted" style={{ margin: "4px 0 0", fontSize: 14 }}>
             같은 이야기 안에서 가사 표현, 장르, 보컬을 바꿔 다시 만들어요. 남은 횟수 {revLeft}/{song.revisions.max}회 (
-            {isAllInOne(song.owned) ? "올인원이라 모두 무료" : `첫 1회 무료, 이후 회당 ${formatWon(PRICES.revision)}`}). 이름·호칭이
+            {isAllInOne(song.bought) ? "올인원이라 모두 무료" : `첫 1회 무료, 이후 회당 ${formatWon(PRICES.revision)}`}). 이름·호칭이
             틀렸거나 추억이 빠졌다면 횟수와 관계없이{" "}
             <Link href="/refund">무료로 다시 만들어 드려요</Link>.
           </p>
@@ -349,6 +351,16 @@ export default function SongsPage() {
           </div>
         )}
       </div>
+
+      {ready && (
+        <Link href="/review-event" className="card story-event" style={{ marginTop: 16 }}>
+          <strong>🎁 처음 듣는 순간을 보내 주세요</strong>
+          <span className="muted">
+            받는 분의 반응 영상을 보내 주시면 {isAllInOne(song.bought) ? "다음 노래 1곡을 무료로" : "MP3와 가사 카드를 무료로"} 드려요. 주문번호{" "}
+            {song.orderNo} →
+          </span>
+        </Link>
+      )}
 
       {lyrics.sections.length > 0 && (
         <div style={{ marginTop: 16 }}>

@@ -2,6 +2,7 @@ import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { applyPaid } from "@/lib/commerce";
 import { type PurchaseRow, getDb, purchaseItems } from "@/lib/db";
 import { CANCEL_STATES, PAID_STATE, verifyFeedback } from "@/lib/payapp";
+import { revokeRewardsStatements } from "@/lib/rewards";
 
 const ok = () => new Response("SUCCESS");
 
@@ -32,7 +33,9 @@ export async function POST(req: Request) {
     if (updated.meta.changes) await applyPaid(purchaseId);
   } else if (CANCEL_STATES.includes(state)) {
     const stmts = [db.prepare("UPDATE purchases SET status = 'cancelled' WHERE id = ?").bind(purchaseId)];
-    if (purchaseItems(p).includes("song")) stmts.push(db.prepare("UPDATE orders SET gift_enabled = 0 WHERE id = ?").bind(p.order_id));
+    if (purchaseItems(p).includes("song")) {
+      stmts.push(db.prepare("UPDATE orders SET gift_enabled = 0 WHERE id = ?").bind(p.order_id), ...revokeRewardsStatements(db, p.order_id));
+    }
     if (purchaseItems(p).includes("revision")) {
       stmts.push(db.prepare("UPDATE revisions SET status = 'cancelled' WHERE purchase_id = ? AND status = 'awaiting_payment'").bind(purchaseId));
     }

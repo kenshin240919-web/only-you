@@ -1,10 +1,11 @@
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { NextResponse } from "next/server";
-import { createPurchase } from "@/lib/commerce";
+import { createFreePurchase, createPurchase } from "@/lib/commerce";
 import { getDb, hashToken, randomToken } from "@/lib/db";
 import { songTitle } from "@/lib/draft";
 import { payappEnabled } from "@/lib/payapp";
 import { parsePhone } from "@/lib/phone";
+import { checkCoupon, normalizeCoupon, useCoupon } from "@/lib/rewards";
 import type { Item } from "@/lib/pricing";
 import { cleanSource } from "@/lib/source";
 import { parseDraft } from "@/lib/validate";
@@ -20,7 +21,7 @@ export async function POST(req: Request) {
   const text = await req.text();
   if (text.length > MAX_BODY) return NextResponse.json({ error: "too_large" }, { status: 413 });
 
-  let body: { draft?: unknown; phone?: unknown; addons?: unknown; src?: unknown };
+  let body: { draft?: unknown; phone?: unknown; addons?: unknown; src?: unknown; coupon?: unknown };
   try {
     body = JSON.parse(text);
   } catch {
@@ -28,11 +29,17 @@ export async function POST(req: Request) {
   }
   const draft = parseDraft(body.draft);
   if (!draft) return NextResponse.json({ error: "invalid" }, { status: 400 });
-  const addons = Array.isArray(body.addons) ? (["mp3", "card"] as const).filter((a) => (body.addons as unknown[]).includes(a)) : [];
+  // 무료 노래 쿠폰은 노래 듣기만(MP3·가사 카드 제외) 결제 없이 만든다.
+  const coupon = normalizeCoupon(body.coupon);
+  if (coupon) {
+    const check = await checkCoupon(coupon);
+    if (!check.valid) return NextResponse.json({ error: `coupon_${check.reason}` }, { status: 400 });
+  }
+  const addons = coupon || !Array.isArray(body.addons) ? [] : (["mp3", "card"] as const).filter((a) => (body.addons as unknown[]).includes(a));
 
   const { env } = await getCloudflareContext({ async: true });
   const phone = parsePhone(body.phone);
-  if (payappEnabled(env) && !phone) return NextResponse.json({ error: "invalid_phone" }, { status: 400 });
+  if (!coupon && payappEnabled(env) && !phone) return NextResponse.json({ error: "invalid_phone" }, { status: 400 });
 
   const id = randomToken(16);
   const ownerToken = randomToken();
@@ -55,6 +62,15 @@ export async function POST(req: Request) {
   // 관리자 화면의 유입 경로별 집계에 쓴다.
   const src = cleanSource(body.src);
   if (src) await db.prepare("INSERT INTO order_sources (order_id, src) VALUES (?, ?)").bind(id, src).run();
+
+  if (coupon) {
+    if (!(await useCoupon(coupon, id))) {
+      await db.batch([db.prepare("DELETE FROM orders WHERE id = ?").bind(id), db.prepare("DELETE FROM order_sources WHERE order_id = ?").bind(id)]);
+      return NextResponse.json({ error: "coupon_used" }, { status: 400 });
+    }
+    await createFreePurchase(id, ["song"], "coupon");
+    return NextResponse.json({ id, ownerToken, giftToken, orderNo, paidAt: now, payurl: null }, { status: 201 });
+  }
 
   const purchase = await createPurchase(id, ["song", ...addons] as Item[], phone ?? "", new URL(req.url).origin, "orders");
   if (!purchase) {

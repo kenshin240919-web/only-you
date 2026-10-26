@@ -1532,3 +1532,77 @@ button.stat {
 .step-title:focus {
   outline: none;
 }
+
+/* 주문 확인: 무료 노래 쿠폰 */
+.coupon-box summary {
+  cursor: pointer;
+  color: var(--ink-soft);
+  font-size: 14px;
+}
+
+.coupon-row {
+  display: flex;
+  gap: 8px;
+  margin: 10px 0 6px;
+}
+
+.coupon-row .input {
+  flex: 1;
+  min-width: 0;
+  text-transform: uppercase;
+}
+
+/* 후기 코너 · 후기 이벤트 안내 */
+.story-event {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 16px;
+  color: inherit;
+  text-decoration: none;
+  border: 1px solid var(--accent);
+}
+
+.story-event .muted {
+  font-size: 14px;
+}
+
+.stories {
+  display: grid;
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.story-video {
+  width: 100%;
+  max-height: 70vh;
+  border-radius: 12px;
+  background: #000;
+  margin-bottom: 12px;
+}
+
+.story-occasion {
+  margin: 0 0 6px;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.story-body {
+  margin: 0;
+  line-height: 1.7;
+  white-space: pre-wrap;
+}
+
+.story-meta {
+  margin: 10px 0 0;
+  font-size: 13px;
+}
+
+.admin-review-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 14px;
+}

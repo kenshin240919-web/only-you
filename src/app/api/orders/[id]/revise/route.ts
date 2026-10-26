@@ -21,7 +21,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   const note = typeof body?.note === "string" ? body.note.trim().slice(0, 300) : "";
   if (!genre && !vocal && !note) return NextResponse.json({ error: "invalid" }, { status: 400 });
 
-  const { payment, owned } = ownership(await getPurchases(id));
+  const { payment, bought } = ownership(await getPurchases(id));
   if (payment !== "paid") return NextResponse.json({ error: "not_paid" }, { status: 409 });
   const song = await getSong(id);
   if (song?.status !== "ready") return NextResponse.json({ error: "song_not_ready" }, { status: 409 });
@@ -29,7 +29,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   const used = revisions.filter((r) => r.status === "started").length;
   if (used >= MAX_REVISIONS) return NextResponse.json({ error: "limit" }, { status: 409 });
 
-  const free = used < freeRevisions(owned);
+  const free = used < freeRevisions(bought);
   const { env } = await getCloudflareContext({ async: true });
   const phone = parsePhone(body?.phone);
   if (!free && payappEnabled(env) && !phone) return NextResponse.json({ error: "invalid_phone" }, { status: 400 });

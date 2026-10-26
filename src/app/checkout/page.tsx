@@ -28,6 +28,10 @@ export default function CheckoutPage() {
   const [paying, setPaying] = useState(false);
   const [error, setError] = useState("");
   const [phone, setPhone] = useState("");
+  // 후기 혜택으로 받은 무료 노래 쿠폰(노래 듣기만). 확인되면 추가 상품 없이 0원으로 만든다.
+  const [coupon, setCoupon] = useState("");
+  const [couponOk, setCouponOk] = useState(false);
+  const [couponMsg, setCouponMsg] = useState("");
 
   if (!order) return null;
   if (!order.draft.agreeRequired || !order.draft.email) {
@@ -40,23 +44,50 @@ export default function CheckoutPage() {
   }
 
   const d = order.draft;
-  const items: Item[] = ["song", ...addons];
-  const total = priceOf(items);
-  const allInOne = addons.length === 2;
+  const items: Item[] = couponOk ? ["song"] : ["song", ...addons];
+  const total = couponOk ? 0 : priceOf(items);
+  const allInOne = !couponOk && addons.length === 2;
+
+  const checkCoupon = async () => {
+    setCouponMsg("확인 중…");
+    const r = (await fetch(`/api/coupons?code=${encodeURIComponent(coupon)}`)
+      .then((x) => x.json())
+      .catch(() => ({ valid: false }))) as { valid: boolean; reason?: string };
+    setCouponOk(r.valid);
+    setCouponMsg(
+      r.valid
+        ? "쿠폰이 확인됐어요. 노래 1곡을 결제 없이 만들어요(MP3·가사 카드 제외)."
+        : r.reason === "used"
+          ? "이미 사용한 쿠폰이에요."
+          : r.reason === "expired"
+            ? "기간이 지난 쿠폰이에요."
+            : "쿠폰 번호를 다시 확인해 주세요.",
+    );
+  };
   const toggle = (a: "mp3" | "card") => setAddons((cur) => (cur.includes(a) ? cur.filter((x) => x !== a) : [...cur, a]));
 
   const pay = async () => {
     // 페이앱이면 서버가 결제 대기 주문과 결제창 주소를 만들고, 결제 완료는 페이앱 알림으로 서버가 확인한다.
     setPaying(true);
     setError("");
-    const win = provider === "payapp" ? openPayWindow() : null;
+    const win = provider === "payapp" && !couponOk ? openPayWindow() : null;
     try {
       const res = await fetch("/api/orders", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ draft: order.draft, addons, phone, src: currentSource() }),
+        body: JSON.stringify({ draft: order.draft, addons: couponOk ? [] : addons, phone, src: currentSource(), coupon: couponOk ? coupon : undefined }),
       });
-      if (!res.ok) throw new Error(String(res.status));
+      if (!res.ok) {
+        const err = ((await res.json().catch(() => ({}))) as { error?: string }).error ?? "";
+        if (err.startsWith("coupon_")) {
+          closePayWindow(win);
+          setCouponOk(false);
+          setCouponMsg("쿠폰을 쓸 수 없어요. 이미 사용했거나 기간이 지났을 수 있어요.");
+          setPaying(false);
+          return;
+        }
+        throw new Error(String(res.status));
+      }
       const saved = (await res.json()) as {
         id: string;
         ownerToken: string;
@@ -116,7 +147,13 @@ export default function CheckoutPage() {
           </p>
           {ADDONS.map((a) => (
             <label key={a.item} className="checkbox addon-row">
-              <input id={`addon-${a.item}`} type="checkbox" checked={addons.includes(a.item)} onChange={() => toggle(a.item)} />
+              <input
+                id={`addon-${a.item}`}
+                type="checkbox"
+                checked={!couponOk && addons.includes(a.item)}
+                disabled={couponOk}
+                onChange={() => toggle(a.item)}
+              />
               <span className="row-between" style={{ flex: 1, padding: 0 }}>
                 <span>
                   {a.label}
@@ -143,11 +180,17 @@ export default function CheckoutPage() {
               </div>
             </>
           )}
+          {couponOk && (
+            <div className="row-between bundle-note">
+              <span>무료 노래 쿠폰</span>
+              <span>-{formatWon(PRICES.song)}</span>
+            </div>
+          )}
           <div className="row-between total">
             <span>{allInOne ? "올인원 결제금액" : "최종 결제금액"}</span>
             <span>{formatWon(total)}</span>
           </div>
-          {!allInOne && (
+          {!allInOne && !couponOk && (
             <p className="muted" style={{ margin: "8px 0 0", fontSize: 13 }}>
               MP3와 가사 카드는 노래를 들어 본 뒤 &lsquo;내 노래&rsquo;에서도 살 수 있어요.
             </p>
@@ -163,15 +206,37 @@ export default function CheckoutPage() {
         </span>
       </label>
 
-      {provider === "payapp" && (
+      <details className="coupon-box" style={{ marginTop: 16 }}>
+        <summary>무료 노래 쿠폰이 있으세요?</summary>
+        <div className="coupon-row">
+          <input
+            id="coupon"
+            className="input"
+            placeholder="SONG-XXXX-XXXX"
+            value={coupon}
+            autoCapitalize="characters"
+            onChange={(e) => {
+              setCoupon(e.target.value);
+              setCouponOk(false);
+              setCouponMsg("");
+            }}
+          />
+          <button type="button" className="btn-ghost" disabled={!coupon.trim()} onClick={checkCoupon}>
+            적용
+          </button>
+        </div>
+        {couponMsg && <small className={couponOk ? "muted" : "field-error"}>{couponMsg}</small>}
+      </details>
+
+      {provider === "payapp" && !couponOk && (
         <div style={{ marginTop: 16 }}>
           <PhoneField id="phone" value={phone} onChange={setPhone} />
         </div>
       )}
-      {provider === "unavailable" && (
+      {provider === "unavailable" && !couponOk && (
         <div className="notice">지금은 결제를 받을 수 없어요. 잠시 후 다시 시도해 주세요.</div>
       )}
-      {provider === "mock" && (
+      {provider === "mock" && !couponOk && (
         <div className="notice">시제품이라 실제 결제는 이루어지지 않습니다. 버튼을 누르면 결제가 완료된 것처럼 진행돼요.</div>
       )}
 
@@ -183,10 +248,12 @@ export default function CheckoutPage() {
       <button
         type="button"
         className="btn btn-block"
-        disabled={!agree || paying || !provider || provider === "unavailable" || (provider === "payapp" && !isPhone(phone))}
+        disabled={
+          !agree || paying || (!couponOk && (!provider || provider === "unavailable" || (provider === "payapp" && !isPhone(phone))))
+        }
         onClick={pay}
       >
-        {paying ? "결제 준비 중…" : `${formatWon(total)} 결제하고 제작 시작`}
+        {paying ? "결제 준비 중…" : couponOk ? "쿠폰으로 제작 시작" : `${formatWon(total)} 결제하고 제작 시작`}
       </button>
     </div>
   );
