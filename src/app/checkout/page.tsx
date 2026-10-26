@@ -37,6 +37,7 @@ export default function CheckoutPage() {
   const promoInfo = usePromo();
   const [promoOff, setPromoOff] = useState(false);
   const [promoMsg, setPromoMsg] = useState("");
+  const [promoAgree, setPromoAgree] = useState(false);
 
   if (!order) return null;
   if (!order.draft.agreeRequired || !order.draft.email) {
@@ -246,6 +247,15 @@ export default function CheckoutPage() {
           </span>
         </label>
       )}
+      {promo && (
+        <label className="checkbox">
+          <input type="checkbox" checked={promoAgree} onChange={(e) => setPromoAgree(e.target.checked)} />
+          <span>
+            <strong>(필수)</strong> 신청 후 7일 안에 반응 영상을 보내지 않으면 노래 듣기(선물 링크 포함)가 정지되고, 계속 들으려면 노래 값{" "}
+            {formatWon(PRICES.song)}을 결제해야 한다는 점을 확인했습니다.
+          </span>
+        </label>
+      )}
       {promoMsg && <p className="field-error">{promoMsg}</p>}
 
       <details className="coupon-box" style={{ marginTop: 16 }} hidden={promo}>
@@ -291,7 +301,10 @@ export default function CheckoutPage() {
         type="button"
         className="btn btn-block"
         disabled={
-          !agree || paying || (!free && (!provider || provider === "unavailable" || (provider === "payapp" && !isPhone(phone))))
+          !agree ||
+          paying ||
+          (promo && !promoAgree) ||
+          (!free && (!provider || provider === "unavailable" || (provider === "payapp" && !isPhone(phone))))
         }
         onClick={pay}
       >

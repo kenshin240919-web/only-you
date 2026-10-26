@@ -51,6 +51,7 @@ type Detail = {
   payment: string;
   owned: Item[];
   bought: Item[];
+  lock: { locked: boolean; reason: "expired" | "admin" | null; deadline: string | null };
   rewards: { kind: "video" | "text"; benefit: string; couponCode: string | null; createdAt: string }[];
   purchases: { id: string; items: Item[]; amount: number; provider: string; status: string; providerRef: string | null; createdAt: string; paidAt: string | null }[];
   revisions: { id: string; paid: boolean; status: string; request: { genre?: string; vocal?: string; note?: string }; createdAt: string }[];
@@ -413,6 +414,30 @@ export default function AdminPage() {
                 >
                   {detail.giftEnabled ? "끄기" : "켜기"}
                 </button>
+              </small>
+              <small className="muted">
+                노래 듣기:{" "}
+                {detail.lock.locked
+                  ? detail.lock.reason === "expired"
+                    ? "정지됨 (오픈 기념 무료 영상 기한 지남)"
+                    : "정지됨 (관리자)"
+                  : detail.lock.deadline
+                    ? `열림 · 영상 마감 ${kst(detail.lock.deadline)}`
+                    : "열림"}{" "}
+                {detail.lock.locked ? (
+                  <button type="button" className="link-btn" disabled={busy} onClick={() => act({ action: "lock", state: "open" }, "노래를 다시 열까요? 기한과 관계없이 계속 들을 수 있어요.")}>
+                    다시 열기
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    className="link-btn"
+                    disabled={busy}
+                    onClick={() => act({ action: "lock", state: "locked" }, "노래 듣기를 정지할까요? 내 노래와 선물 링크에서 더 이상 들을 수 없어요.")}
+                  >
+                    정지
+                  </button>
+                )}
               </small>
               {detail.revisions.length > 0 && (
                 <ul className="admin-revisions">

@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import { cache } from "react";
 import EmptyState from "@/components/EmptyState";
 import GiftReveal from "@/components/GiftReveal";
-import { getGift } from "@/lib/db";
+import { getGift, getGiftOrder } from "@/lib/db";
+import { songLock } from "@/lib/lock";
 
 export const dynamic = "force-dynamic";
 
@@ -33,6 +34,11 @@ export async function generateMetadata({ params }: { params: Promise<{ token: st
 export default async function GiftPage({ params }: { params: Promise<{ token: string }> }) {
   const { token } = await params;
   const gift = await loadGift(token);
+  // 듣기가 정지된 노래(오픈 기념 무료 기한 만료 · 관리자 정지)는 선물 링크도 열지 않는다.
+  const order = gift ? await getGiftOrder(token) : null;
+  if (order && (await songLock(order.id)).locked) {
+    return <EmptyState title="노래 듣기가 잠시 멈췄어요" desc="이 노래는 지금 들을 수 없어요. 노래를 보내 준 분께 문의해 주세요." href="/" cta="Only U song 둘러보기" />;
+  }
   if (!gift) {
     return <EmptyState title="선물을 찾을 수 없어요" desc="링크가 꺼졌거나 잘못되었을 수 있어요." href="/" cta="Only U song 둘러보기" />;
   }

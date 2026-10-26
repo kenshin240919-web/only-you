@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 
-type Promo = { enabled: boolean; limit: number; used: number; left: number; active: boolean; claims: { created_at: string; order_no: string }[] };
+type Promo = { enabled: boolean; limit: number; used: number; left: number; active: boolean; claims: { created_at: string; order_no: string; video: number }[] };
 
 const kst = (iso: string) => new Date(iso).toLocaleString("ko-KR", { timeZone: "Asia/Seoul", month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit" });
 
@@ -66,7 +66,8 @@ export default function AdminPromo() {
         <small className="muted">
           {p.claims.map((c, i) => (
             <span key={c.order_no}>
-              {i + 1}. {c.order_no} ({kst(c.created_at)})
+              {i + 1}. {c.order_no} ({kst(c.created_at)}) ·{" "}
+              {c.video ? "영상 받음" : `영상 마감 ${kst(new Date(new Date(c.created_at).getTime() + 7 * 86400 * 1000).toISOString())}`}
               <br />
             </span>
           ))}

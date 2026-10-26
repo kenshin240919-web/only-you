@@ -2,6 +2,7 @@ import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { forbidden, isAdmin } from "@/lib/admin";
 import { type OrderRow, type SongRow, getDb, getPurchases, getRevisions, ownership, purchaseItems } from "@/lib/db";
 import type { Draft, Lyrics } from "@/lib/draft";
+import { setSongLock, songLock } from "@/lib/lock";
 import { mailReward } from "@/lib/mail";
 import { reviseSong } from "@/lib/music";
 import { GENRES, VOCALS } from "@/lib/options";
@@ -43,6 +44,7 @@ export async function GET(req: Request, { params }: Ctx) {
       createdAt: p.created_at,
       paidAt: p.paid_at,
     })),
+    lock: await songLock(order.id, purchases),
     rewards: rewards.map((r) => ({ kind: r.kind, benefit: r.benefit, couponCode: r.coupon_code, createdAt: r.created_at })),
     revisions: revisions.map((r) => ({ id: r.id, paid: r.paid === 1, status: r.status, request: JSON.parse(r.request_json), createdAt: r.created_at })),
     song: song
@@ -63,6 +65,7 @@ export async function GET(req: Request, { params }: Ctx) {
 // regenerate: 우리 잘못·제작 실패 시 수정 횟수와 관계없이 무료로 다시 만든다.
 // cancel_purchase: 페이앱 관리자 화면에서 환불한 뒤 알림이 오지 않았을 때 결제를 취소로 표시한다(돈을 돌려주지는 않는다).
 // gift: 선물 링크 켜기·끄기.
+// lock: 노래 듣기 정지(locked) · 기한과 관계없이 다시 열기(open) · 자동 규칙으로 되돌리기(auto).
 // reward: 후기 확인 후 혜택 지급(video: 반응 영상, text: 글·사진 후기). 주문자에게 메일로 알린다.
 export async function POST(req: Request, { params }: Ctx) {
   if (!(await isAdmin(req))) return forbidden();
@@ -108,6 +111,11 @@ export async function POST(req: Request, { params }: Ctx) {
   if (body?.action === "gift" && typeof body.enabled === "boolean") {
     await db.prepare("UPDATE orders SET gift_enabled = ? WHERE id = ?").bind(body.enabled ? 1 : 0, id).run();
     return Response.json({ ok: true });
+  }
+
+  if (body?.action === "lock" && (body.state === "locked" || body.state === "open" || body.state === "auto")) {
+    await setSongLock(id, body.state === "auto" ? null : body.state);
+    return Response.json({ ok: true, message: body.state === "locked" ? "노래 듣기를 정지했어요." : "노래를 다시 열었어요." });
   }
 
   if (body?.action === "reward" && (body.kind === "video" || body.kind === "text")) {

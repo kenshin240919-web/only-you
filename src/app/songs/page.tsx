@@ -9,6 +9,7 @@ import PhoneField, { isPhone } from "@/components/PhoneField";
 import SongPlayer from "@/components/SongPlayer";
 import { closePayWindow, goPay, openPayWindow } from "@/components/payWindow";
 import { usePaymentProvider } from "@/components/usePaymentProvider";
+import { BUSINESS } from "@/lib/business";
 import { useOrder } from "@/components/useOrder";
 import { type Draft, type Lyrics, callName, clearOrder, genreLabel } from "@/lib/draft";
 import { GENRES, VOCALS, labelOf } from "@/lib/options";
@@ -28,6 +29,8 @@ type ServerOrder = {
   bought: Item[];
   /** 오픈 기념 무료 주문. */
   promo: boolean;
+  /** 듣기 정지 여부와 오픈 기념 무료의 영상 마감 시각. */
+  lock: { locked: boolean; reason: "expired" | "admin" | null; deadline: string | null };
   pendingPurchase: boolean;
   revisions: { used: number; max: number; freeLeft: number };
   song: { status: SongStatus; title: string | null; lyrics: Lyrics | null; version: string | null };
@@ -163,7 +166,7 @@ export default function SongsPage() {
     setBusy(false);
   };
 
-  const buy = (items: ("mp3" | "card")[]) => post("purchase", { items });
+  const buy = (items: Item[]) => post("purchase", { items });
   const revise = () => post("revise", rev);
 
   const copy = async () => {
@@ -187,6 +190,45 @@ export default function SongsPage() {
   };
 
   const missing = (["mp3", "card"] as const).filter((i) => !song.owned.includes(i));
+  const deadline = song.lock.deadline
+    ? new Date(song.lock.deadline).toLocaleString("ko-KR", { timeZone: "Asia/Seoul", month: "long", day: "numeric", hour: "numeric", minute: "2-digit" })
+    : null;
+
+  // 듣기가 정지된 노래: 오픈 기념 무료 기한이 지났으면 노래 값을 결제해 다시 열 수 있다. 관리자가 정지했으면 문의 안내만.
+  if (song.lock.locked) {
+    return (
+      <div className="container narrow" style={{ paddingBottom: 40 }}>
+        <div className="page-head">
+          <h1>노래 듣기가 멈췄어요</h1>
+          <p>주문번호 {song.orderNo}</p>
+        </div>
+        <div className="card stack" style={{ marginTop: 20 }}>
+          {song.lock.reason === "expired" ? (
+            <>
+              <p style={{ margin: 0 }}>
+                오픈 기념 무료 노래의 듣기 기간(신청 후 7일)이 끝났어요. 「{title}」을(를) 계속 들으시려면 노래 값 {formatWon(PRICES.song)}을 결제해
+                주세요. 결제하면 내 노래와 선물 링크가 바로 다시 열려요.
+              </p>
+              {song.pendingPurchase && <p className="muted" style={{ margin: 0 }}>결제를 확인하고 있어요. 잠시만 기다려 주세요.</p>}
+              {needPhone && <PhoneField id="phone" value={phone} onChange={setPhone} />}
+              <button type="button" className="btn btn-block" disabled={busy || !phoneOk} onClick={() => buy(["song"])}>
+                {formatWon(PRICES.song)} 결제하고 다시 듣기
+              </button>
+            </>
+          ) : (
+            <p style={{ margin: 0 }}>
+              이 노래는 지금 들을 수 없어요. 궁금한 점은 {BUSINESS.email}로 문의해 주세요.
+            </p>
+          )}
+          {error && (
+            <p className="field-error" role="alert" style={{ margin: 0 }}>
+              {error}
+            </p>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container narrow" style={{ paddingBottom: 40 }}>
@@ -231,7 +273,8 @@ export default function SongsPage() {
               <div className="actions-row" style={{ margin: 0 }}>
                 {missing.length === 2 && (
                   <button type="button" className="btn" disabled={busy || !phoneOk} onClick={() => buy(["mp3", "card"])}>
-                    MP3 + 가사 카드 {formatWon(ADDON_PAIR)} (수정 {MAX_REVISIONS}회 무료로)
+                    MP3 + 가사 카드 {formatWon(ADDON_PAIR)}
+                    {song.bought.includes("song") && ` (수정 ${MAX_REVISIONS}회 무료로)`}
                   </button>
                 )}
                 {missing.map((i) => (
@@ -360,6 +403,12 @@ export default function SongsPage() {
           <span className="muted">
             받는 분이 처음 듣는 순간을 영상으로 보내 주시면 MP3와 가사 카드를 무료로 열어 드려요. 완성 메일에 답장으로 보내 주세요(주문번호{" "}
             {song.orderNo}).
+            {deadline && (
+              <>
+                <br />
+                <strong>{deadline}까지 보내 주세요.</strong> 기한이 지나면 노래 듣기(선물 링크 포함)가 정지돼요.
+              </>
+            )}
           </span>
         </div>
       )}
