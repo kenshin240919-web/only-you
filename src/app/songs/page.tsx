@@ -7,6 +7,7 @@ import LyricsCard from "@/components/LyricsCard";
 import LyricsSheet from "@/components/LyricsSheet";
 import PhoneField, { isPhone } from "@/components/PhoneField";
 import SongPlayer from "@/components/SongPlayer";
+import { closePayWindow, goPay, openPayWindow } from "@/components/payWindow";
 import { usePaymentProvider } from "@/components/usePaymentProvider";
 import { useOrder } from "@/components/useOrder";
 import { type Draft, type Lyrics, callName, clearOrder, genreLabel } from "@/lib/draft";
@@ -136,21 +137,23 @@ export default function SongsPage() {
   const revLeft = song.revisions.max - song.revisions.used;
   const freeRev = song.revisions.freeLeft > 0;
 
-  // 결제가 필요하면 페이앱 결제창으로 보내고, 아니면(모의 결제·무료 수정) 바로 다시 불러온다.
+  // 결제가 필요하면 페이앱 결제창(새 창)을 열고, 아니면(모의 결제·무료 수정) 바로 다시 불러온다.
   const post = async (path: string, body: object) => {
     setBusy(true);
     setError("");
+    // 무료 수정은 결제가 없으니 창을 열지 않는다.
+    const win = provider === "payapp" && !(path === "revise" && freeRev) ? openPayWindow() : null;
     try {
       const res = await fetch(`/api/orders/${order.orderId}/${path}`, { method: "POST", headers, body: JSON.stringify({ ...body, phone }) });
       if (!res.ok) throw new Error(String(res.status));
       const { payurl } = (await res.json()) as { payurl: string | null };
-      if (payurl) {
-        window.location.href = payurl;
-        return;
-      }
+      // 새 창으로 결제하면 이 창은 다시 불러와서 결제 완료를 기다린다(결제 대기 중이면 3초마다 확인).
+      if (payurl && !goPay(win, payurl)) return;
+      if (!payurl) closePayWindow(win);
       setRev({ genre: "", vocal: "", note: "" });
       setRefresh((n) => n + 1);
     } catch {
+      closePayWindow(win);
       setError("요청을 처리하지 못했어요. 잠시 후 다시 시도해 주세요.");
     }
     setBusy(false);

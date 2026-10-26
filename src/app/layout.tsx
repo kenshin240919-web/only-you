@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import Link from "next/link";
 import Mascot from "@/components/Mascot";
+import PayReturn from "@/components/PayReturn";
 import SourceTracker from "@/components/SourceTracker";
 import { BUSINESS } from "@/lib/business";
 import "./globals.css";
@@ -43,6 +44,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body>
         <SourceTracker />
+        <PayReturn />
         <header className="site-header">
           <div className="container header-inner">
             <Link href="/" className="logo" aria-label="Only U song 홈">

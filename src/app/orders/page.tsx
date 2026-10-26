@@ -68,12 +68,12 @@ export default function OrdersPage() {
             주문번호 {order.orderNo} ·{" "}
             {cancelled
               ? "취소된 주문은 노래를 만들지 않아요."
-              : "결제를 마치셨다면 잠시 기다려 주세요. 확인되면 바로 노래를 만들기 시작해요."}
+              : "새 창에서 결제를 마치면 여기에서 바로 확인하고 노래를 만들기 시작해요."}
           </p>
         </div>
         <div className="card stack" style={{ marginTop: 20 }}>
           <p style={{ margin: 0 }}>
-            {cancelled ? "같은 이야기로 다시 주문할 수 있어요." : "결제 창을 닫았거나 결제를 마치지 못하셨다면 다시 결제해 주세요."}
+            {cancelled ? "같은 이야기로 다시 주문할 수 있어요." : "결제창을 닫았거나 결제를 마치지 못하셨다면 다시 결제해 주세요."}
           </p>
           <button type="button" className="btn btn-block" onClick={reorder}>
             {cancelled ? "다시 주문하기" : "결제 다시 하기"}
