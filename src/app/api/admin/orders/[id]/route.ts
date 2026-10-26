@@ -113,7 +113,7 @@ export async function POST(req: Request, { params }: Ctx) {
   if (body?.action === "reward" && (body.kind === "video" || body.kind === "text")) {
     const r = await grantReward(id, body.kind);
     if (!r.ok) {
-      const message = { already: "이미 이 종류의 혜택을 드렸어요.", not_paid: "결제가 끝난 주문이 아니에요.", nothing: "이미 가사 카드를 가진 주문이라 드릴 혜택이 없어요." }[r.reason];
+      const message = { already: "이미 이 종류의 혜택을 드렸어요.", not_paid: "결제가 끝난 주문이 아니에요.", nothing: "이미 가사 카드를 가진 주문이라 드릴 혜택이 없어요.", promo: "오픈 기념 무료 주문은 후기 혜택 대상이 아니에요." }[r.reason];
       return Response.json({ error: r.reason, message }, { status: 409 });
     }
     const { env } = await getCloudflareContext({ async: true });

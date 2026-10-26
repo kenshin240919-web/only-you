@@ -8,6 +8,7 @@ import PhoneField, { isPhone } from "@/components/PhoneField";
 import { closePayWindow, goPay, openPayWindow } from "@/components/payWindow";
 import { currentSource } from "@/components/SourceTracker";
 import { usePaymentProvider } from "@/components/usePaymentProvider";
+import { usePromo } from "@/components/usePromo";
 import { useOrder } from "@/components/useOrder";
 import { callName, genreLabel, reasonLabel, relationshipLabel, songTitle } from "@/lib/draft";
 import { VOCALS, labelOf } from "@/lib/options";
@@ -32,6 +33,10 @@ export default function CheckoutPage() {
   const [coupon, setCoupon] = useState("");
   const [couponOk, setCouponOk] = useState(false);
   const [couponMsg, setCouponMsg] = useState("");
+  // 오픈 기념 선착순 무료(올인원 0원). 진행 중이면 기본으로 고른다.
+  const promoInfo = usePromo();
+  const [promoOff, setPromoOff] = useState(false);
+  const [promoMsg, setPromoMsg] = useState("");
 
   if (!order) return null;
   if (!order.draft.agreeRequired || !order.draft.email) {
@@ -44,9 +49,11 @@ export default function CheckoutPage() {
   }
 
   const d = order.draft;
-  const items: Item[] = couponOk ? ["song"] : ["song", ...addons];
-  const total = couponOk ? 0 : priceOf(items);
-  const allInOne = !couponOk && addons.length === 2;
+  const promo = Boolean(promoInfo) && !promoOff;
+  const free = promo || couponOk;
+  const items: Item[] = promo ? ["song", "mp3", "card"] : couponOk ? ["song"] : ["song", ...addons];
+  const total = free ? 0 : priceOf(items);
+  const allInOne = !free && addons.length === 2;
 
   const checkCoupon = async () => {
     setCouponMsg("확인 중…");
@@ -70,15 +77,29 @@ export default function CheckoutPage() {
     // 페이앱이면 서버가 결제 대기 주문과 결제창 주소를 만들고, 결제 완료는 페이앱 알림으로 서버가 확인한다.
     setPaying(true);
     setError("");
-    const win = provider === "payapp" && !couponOk ? openPayWindow() : null;
+    const win = provider === "payapp" && !free ? openPayWindow() : null;
     try {
       const res = await fetch("/api/orders", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ draft: order.draft, addons: couponOk ? [] : addons, phone, src: currentSource(), coupon: couponOk ? coupon : undefined }),
+        body: JSON.stringify({
+          draft: order.draft,
+          addons: free ? [] : addons,
+          phone,
+          src: currentSource(),
+          coupon: couponOk && !promo ? coupon : undefined,
+          promo: promo || undefined,
+        }),
       });
       if (!res.ok) {
         const err = ((await res.json().catch(() => ({}))) as { error?: string }).error ?? "";
+        if (err.startsWith("promo_")) {
+          closePayWindow(win);
+          setPromoOff(true);
+          setPromoMsg(err === "promo_used" ? "이 이메일로 이미 오픈 기념 무료를 받으셨어요." : "아쉽게도 오픈 기념 무료가 마감됐어요.");
+          setPaying(false);
+          return;
+        }
         if (err.startsWith("coupon_")) {
           closePayWindow(win);
           setCouponOk(false);
@@ -150,8 +171,8 @@ export default function CheckoutPage() {
               <input
                 id={`addon-${a.item}`}
                 type="checkbox"
-                checked={!couponOk && addons.includes(a.item)}
-                disabled={couponOk}
+                checked={promo || (!couponOk && addons.includes(a.item))}
+                disabled={free}
                 onChange={() => toggle(a.item)}
               />
               <span className="row-between" style={{ flex: 1, padding: 0 }}>
@@ -180,7 +201,13 @@ export default function CheckoutPage() {
               </div>
             </>
           )}
-          {couponOk && (
+          {promo && (
+            <div className="row-between bundle-note">
+              <span>오픈 기념 무료</span>
+              <span>-{formatWon(PRICES.bundle)}</span>
+            </div>
+          )}
+          {couponOk && !promo && (
             <div className="row-between bundle-note">
               <span>무료 노래 쿠폰</span>
               <span>-{formatWon(PRICES.song)}</span>
@@ -190,7 +217,7 @@ export default function CheckoutPage() {
             <span>{allInOne ? "올인원 결제금액" : "최종 결제금액"}</span>
             <span>{formatWon(total)}</span>
           </div>
-          {!allInOne && !couponOk && (
+          {!allInOne && !free && (
             <p className="muted" style={{ margin: "8px 0 0", fontSize: 13 }}>
               MP3와 가사 카드는 노래를 들어 본 뒤 &lsquo;내 노래&rsquo;에서도 살 수 있어요.
             </p>
@@ -206,7 +233,22 @@ export default function CheckoutPage() {
         </span>
       </label>
 
-      <details className="coupon-box" style={{ marginTop: 16 }}>
+      {promoInfo && (
+        <label className="promo-pick">
+          <input type="checkbox" checked={promo} onChange={(e) => setPromoOff(!e.target.checked)} />
+          <span>
+            <strong>🎉 오픈 기념 무료로 받기</strong>
+            <br />
+            <small className="muted">
+              선착순 {promoInfo.limit}명 · 남은 자리 {promoInfo.left}개 · 노래 + MP3 + 가사 카드를 0원으로(수정 1회). 받는 분이 처음 듣는 순간을
+              영상으로 보내 주시면 큰 힘이 돼요.
+            </small>
+          </span>
+        </label>
+      )}
+      {promoMsg && <p className="field-error">{promoMsg}</p>}
+
+      <details className="coupon-box" style={{ marginTop: 16 }} hidden={promo}>
         <summary>무료 노래 쿠폰이 있으세요?</summary>
         <div className="coupon-row">
           <input
@@ -228,15 +270,15 @@ export default function CheckoutPage() {
         {couponMsg && <small className={couponOk ? "muted" : "field-error"}>{couponMsg}</small>}
       </details>
 
-      {provider === "payapp" && !couponOk && (
+      {provider === "payapp" && !free && (
         <div style={{ marginTop: 16 }}>
           <PhoneField id="phone" value={phone} onChange={setPhone} />
         </div>
       )}
-      {provider === "unavailable" && !couponOk && (
+      {provider === "unavailable" && !free && (
         <div className="notice">지금은 결제를 받을 수 없어요. 잠시 후 다시 시도해 주세요.</div>
       )}
-      {provider === "mock" && !couponOk && (
+      {provider === "mock" && !free && (
         <div className="notice">시제품이라 실제 결제는 이루어지지 않습니다. 버튼을 누르면 결제가 완료된 것처럼 진행돼요.</div>
       )}
 
@@ -249,11 +291,11 @@ export default function CheckoutPage() {
         type="button"
         className="btn btn-block"
         disabled={
-          !agree || paying || (!couponOk && (!provider || provider === "unavailable" || (provider === "payapp" && !isPhone(phone))))
+          !agree || paying || (!free && (!provider || provider === "unavailable" || (provider === "payapp" && !isPhone(phone))))
         }
         onClick={pay}
       >
-        {paying ? "결제 준비 중…" : couponOk ? "쿠폰으로 제작 시작" : `${formatWon(total)} 결제하고 제작 시작`}
+        {paying ? "결제 준비 중…" : promo ? "무료로 제작 시작" : couponOk ? "쿠폰으로 제작 시작" : `${formatWon(total)} 결제하고 제작 시작`}
       </button>
     </div>
   );

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Mascot from "@/components/Mascot";
+import PromoBanner from "@/components/PromoBanner";
 import SamplePlayer from "@/components/SamplePlayer";
 import { ADDON_PAIR, ALL_IN_ONE_LIST, MAX_REVISIONS, PAID_REVISIONS, PRICES, formatWon } from "@/lib/pricing";
 import { SAMPLES } from "@/lib/samples";
@@ -68,6 +69,7 @@ export default function Home() {
           <Link href="/create" className="btn">
             노래 만들기 시작 →
           </Link>
+          <PromoBanner />
           <p className="hero-meta">
             {formatWon(PRICES.song)}부터 · 올인원 {formatWon(PRICES.bundle)} · AI로 제작합니다
           </p>

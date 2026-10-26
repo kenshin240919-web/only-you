@@ -40,13 +40,14 @@ ${foot ? `<p style="margin:16px 0 0;font-size:13px;line-height:1.6;color:#8a8f9c
 </div></body></html>`;
 }
 
-type OrderInfo = { email: string; order_no: string; gift_token: string; gift_enabled: number; title: string | null; error: string | null };
+type OrderInfo = { email: string; order_no: string; gift_token: string; gift_enabled: number; title: string | null; error: string | null; promo: number };
 
 async function orderInfo(orderId: string): Promise<OrderInfo | null> {
   const db = await getDb();
   return db
     .prepare(
-      `SELECT o.email, o.order_no, o.gift_token, o.gift_enabled, s.title, s.error
+      `SELECT o.email, o.order_no, o.gift_token, o.gift_enabled, s.title, s.error,
+         EXISTS (SELECT 1 FROM purchases p WHERE p.order_id = o.id AND p.provider = 'promo') promo
        FROM orders o LEFT JOIN songs s ON s.order_id = o.id WHERE o.id = ?`,
     )
     .bind(orderId)
@@ -88,8 +89,12 @@ export async function mailSongReady(env: CloudflareEnv, orderId: string, revised
     "주문한 기기에서는 &lsquo;내 노래&rsquo;에서 바로 들을 수 있어요. 다른 기기에서는 아래 버튼을 누른 뒤 주문할 때 쓴 이메일을 입력하면 열려요.",
   ];
   if (o.gift_enabled) lines.push(`받는 분께 보낼 선물 링크: <a href="${esc(giftUrl)}" style="color:#c9573f">${esc(giftUrl)}</a>`);
-  // 후기 이벤트 안내(처음 완성 때만).
-  if (!revised)
+  // 후기 이벤트 안내(처음 완성 때만). 오픈 기념 무료 주문은 혜택 대신 영상을 부탁한다.
+  if (!revised && o.promo)
+    lines.push(
+      `🎉 오픈 기념 무료로 드린 노래예요. 받는 분이 노래를 처음 듣는 순간을 영상으로 보내 주시면 큰 힘이 돼요. 이 메일에 답장으로 보내 주세요.`,
+    );
+  else if (!revised)
     lines.push(
       `🎁 노래를 처음 듣는 순간을 영상으로 보내 주시면 MP3·가사 카드(올인원은 다음 노래 1곡)를 드려요. <a href="${esc(site)}/review-event" style="color:#c9573f">후기 이벤트 보기</a>`,
     );
@@ -102,7 +107,11 @@ export async function mailSongReady(env: CloudflareEnv, orderId: string, revised
       `주문번호: ${o.order_no}`,
       `내 노래 열기: ${findUrl} (주문할 때 쓴 이메일 입력)`,
       o.gift_enabled ? `선물 링크: ${giftUrl}` : "",
-      revised ? "" : `후기 이벤트: 노래를 처음 듣는 순간을 영상으로 보내 주시면 혜택을 드려요. ${site}/review-event`,
+      revised
+        ? ""
+        : o.promo
+          ? "오픈 기념 무료로 드린 노래예요. 받는 분이 처음 듣는 순간을 영상으로 보내 주시면 큰 힘이 돼요(이 메일에 답장)."
+          : `후기 이벤트: 노래를 처음 듣는 순간을 영상으로 보내 주시면 혜택을 드려요. ${site}/review-event`,
       `문의: ${BUSINESS.email} · ${BUSINESS.phone}`,
     ]
       .filter(Boolean)
@@ -174,5 +183,22 @@ export async function mailReward(env: CloudflareEnv, orderId: string, benefit: "
     subject: "[Only U song] 후기 혜택이 도착했어요",
     html: layout("후기 혜택이 도착했어요", lines, button),
     text: `${text}\n문의: ${BUSINESS.email} · ${BUSINESS.phone}`,
+  });
+}
+
+/** 오픈 기념 무료 주문이 들어올 때마다 운영자에게 알린다. 인원이 차면 자동으로 마감된다는 것도 알린다. */
+export async function mailAdminPromo(env: CloudflareEnv, orderNo: string, used: number, limit: number): Promise<void> {
+  if (!mailEnabled(env) || !env.ADMIN_EMAIL) return;
+  const site = env.SITE_URL.replace(/\/$/, "");
+  const full = used >= limit;
+  await send(env, {
+    to: env.ADMIN_EMAIL,
+    subject: `[관리자] 오픈 기념 무료 주문 ${used}/${limit}${full ? " (마감)" : ""}`,
+    html: layout(
+      `오픈 기념 무료 주문 ${used}/${limit}`,
+      [`주문번호 <strong>${esc(orderNo)}</strong>`, full ? "정한 인원이 다 차서 자동으로 마감됐어요." : `남은 자리 ${limit - used}개. 관리자 화면에서 언제든 끌 수 있어요.`],
+      { label: "관리자 화면 열기", href: `${site}/admin` },
+    ),
+    text: `오픈 기념 무료 주문 ${used}/${limit}\n주문번호 ${orderNo}\n${full ? "자동 마감됐어요." : `남은 자리 ${limit - used}개`}\n${site}/admin`,
   });
 }

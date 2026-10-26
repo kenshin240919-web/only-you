@@ -9,7 +9,7 @@ import { isAllInOne } from "./pricing";
 export type RewardKind = "video" | "text";
 export type RewardResult =
   | { ok: true; benefit: "addons" | "card" | "coupon"; couponCode?: string }
-  | { ok: false; reason: "already" | "not_paid" | "nothing" };
+  | { ok: false; reason: "already" | "not_paid" | "nothing" | "promo" };
 
 export const COUPON_DAYS = 365;
 
@@ -36,6 +36,8 @@ export async function grantReward(orderId: string, kind: RewardKind): Promise<Re
   const db = await getDb();
   const { payment, owned, bought } = ownership(await getPurchases(orderId));
   if (payment !== "paid") return { ok: false, reason: "not_paid" };
+  // 오픈 기념 무료 주문은 이미 올인원을 받아서 후기 혜택 대상이 아니다.
+  if (!bought.includes("song")) return { ok: false, reason: "promo" };
 
   let benefit: "addons" | "card" | "coupon";
   if (kind === "video") benefit = isAllInOne(bought) ? "coupon" : "addons";

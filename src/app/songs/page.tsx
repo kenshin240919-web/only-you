@@ -26,6 +26,8 @@ type ServerOrder = {
   owned: Item[];
   /** 후기 혜택으로 받은 상품을 뺀 목록(올인원 혜택 판단용). */
   bought: Item[];
+  /** 오픈 기념 무료 주문. */
+  promo: boolean;
   pendingPurchase: boolean;
   revisions: { used: number; max: number; freeLeft: number };
   song: { status: SongStatus; title: string | null; lyrics: Lyrics | null; version: string | null };
@@ -352,7 +354,13 @@ export default function SongsPage() {
         )}
       </div>
 
-      {ready && (
+      {ready && song.promo && (
+        <div className="card story-event" style={{ marginTop: 16 }}>
+          <strong>🎉 오픈 기념 무료로 드린 노래예요</strong>
+          <span className="muted">받는 분이 처음 듣는 순간을 영상으로 보내 주시면 큰 힘이 돼요. 완성 메일에 답장으로 보내 주세요.</span>
+        </div>
+      )}
+      {ready && !song.promo && (
         <Link href="/review-event" className="card story-event" style={{ marginTop: 16 }}>
           <strong>🎁 처음 듣는 순간을 보내 주세요</strong>
           <span className="muted">

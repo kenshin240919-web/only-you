@@ -2,9 +2,8 @@ import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { forbidden, isAdmin } from "@/lib/admin";
 import { getDb } from "@/lib/db";
 
-// 음악 생성 1분에 드는 크레딧. ElevenLabs 요금 페이지 기준(1분 900크레딧)으로 넉넉하게 잡는다.
-// 실제 대시보드 사용량을 역산하면 이보다 적게(약 750) 나와서, 이 값은 남은 곡 수를 적게 어림한다.
-const CREDITS_PER_MINUTE = 900;
+// 음악 생성 1분에 드는 크레딧. 실제 사용량 기준(2026-10-26 첫 실제 주문 1곡 = 1,625크레딧 → 1분 650).
+const CREDITS_PER_MINUTE = 650;
 const MINUTES_PER_SONG = 2.5;
 // 생성 기록(generations)을 남기기 시작한 시각. 이보다 먼저 시작한 주기에는 MUSIC_CREDITS_BEFORE_LOG를 더한다.
 const LOG_START = "2026-10-20T00:00:00.000Z";
