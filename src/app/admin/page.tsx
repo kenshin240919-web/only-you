@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import AdminPromo from "@/components/AdminPromo";
 import AdminReviews from "@/components/AdminReviews";
 import AdminSources from "@/components/AdminSources";
 import LyricsSheet from "@/components/LyricsSheet";
@@ -64,7 +65,7 @@ const SONG_STATUS: Record<string, string> = {
   none: "제작 전",
 };
 const PAY_STATUS: Record<string, string> = { ready: "결제 대기", paid: "결제 완료", cancelled: "취소" };
-const PROVIDER: Record<string, string> = { mock: "모의 결제", reward: "후기 혜택", coupon: "무료 쿠폰" };
+const PROVIDER: Record<string, string> = { mock: "모의 결제", reward: "후기 혜택", coupon: "무료 쿠폰", promo: "오픈 기념 무료" };
 const BENEFIT: Record<string, string> = { addons: "MP3 + 가사 카드", card: "가사 카드", coupon: "다음 노래 1곡 무료 쿠폰" };
 
 const kst = (iso: string | null) =>
@@ -229,6 +230,7 @@ export default function AdminPage() {
         </div>
       )}
 
+      {summary && <AdminPromo />}
       {summary && <AdminSources />}
       {summary && <AdminReviews />}
 

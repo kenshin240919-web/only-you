@@ -46,10 +46,10 @@ export async function createPurchase(
 }
 
 /**
- * 돈을 받지 않는 구매(0원, 결제 완료)를 남긴다. reward는 후기 혜택, coupon은 무료 노래 쿠폰.
+ * 돈을 받지 않는 구매(0원, 결제 완료)를 남긴다. reward는 후기 혜택, coupon은 무료 노래 쿠폰, promo는 오픈 기념 무료.
  * 노래가 들어 있으면 applyPaid가 제작을 시작한다.
  */
-export async function createFreePurchase(orderId: string, items: Item[], provider: "reward" | "coupon"): Promise<string> {
+export async function createFreePurchase(orderId: string, items: Item[], provider: "reward" | "coupon" | "promo"): Promise<string> {
   const db = await getDb();
   const id = `pur_${randomToken(16)}`;
   const now = new Date().toISOString();

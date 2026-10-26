@@ -115,6 +115,9 @@ const PURCHASES_SCHEMA = [
   // migrations/0008_rewards.sql
   "CREATE TABLE IF NOT EXISTS rewards (order_id TEXT NOT NULL, kind TEXT NOT NULL, benefit TEXT NOT NULL, coupon_code TEXT, created_at TEXT NOT NULL, PRIMARY KEY (order_id, kind))",
   "CREATE TABLE IF NOT EXISTS coupons (code TEXT PRIMARY KEY, kind TEXT NOT NULL, source_order_id TEXT, created_at TEXT NOT NULL, expires_at TEXT NOT NULL, used_order_id TEXT, used_at TEXT)",
+  // migrations/0009_promo.sql
+  "CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT NOT NULL)",
+  "CREATE TABLE IF NOT EXISTS promo_claims (campaign TEXT NOT NULL, email TEXT NOT NULL, order_id TEXT NOT NULL, created_at TEXT NOT NULL, PRIMARY KEY (campaign, email))",
   `CREATE TABLE IF NOT EXISTS reviews (
     id TEXT PRIMARY KEY,
     order_id TEXT,
@@ -175,8 +178,8 @@ export type PurchaseRow = {
   order_id: string;
   items: string;
   amount: number;
-  // reward: 후기 혜택으로 준 상품(0원), coupon: 무료 노래 쿠폰으로 만든 주문(0원)
-  provider: "payapp" | "mock" | "reward" | "coupon";
+  // reward: 후기 혜택으로 준 상품(0원), coupon: 무료 노래 쿠폰으로 만든 주문(0원), promo: 오픈 기념 무료(0원)
+  provider: "payapp" | "mock" | "reward" | "coupon" | "promo";
   status: PaymentStatus;
   provider_ref: string | null;
   created_at: string;
@@ -209,7 +212,8 @@ export const purchaseItems = (p: PurchaseRow) => JSON.parse(p.items) as Item[];
 
 /**
  * 처음 주문(노래)의 결제 상태와 결제가 끝난 상품 목록. 결제 기록이 없는 시제품 주문은 모두 가진 것으로 본다.
- * bought는 후기 혜택(reward)으로 받은 상품을 뺀 목록이다. 올인원 혜택(수정 3회 무료 · 후기 쿠폰)은 bought로 판단한다.
+ * bought는 후기 혜택(reward)과 오픈 기념 무료(promo)로 받은 상품을 뺀 목록이다.
+ * 올인원 혜택(수정 3회 무료 · 후기 쿠폰)은 bought로 판단한다. 그래서 무료로 받은 주문은 수정 1회다.
  */
 export function ownership(purchases: PurchaseRow[]): { payment: PaymentStatus; owned: Item[]; bought: Item[] } {
   if (!purchases.length) return { payment: "paid", owned: ["song", "mp3", "card"], bought: ["song", "mp3", "card"] };
@@ -221,7 +225,7 @@ export function ownership(purchases: PurchaseRow[]): { payment: PaymentStatus; o
     for (const i of purchaseItems(p)) {
       if (i === "revision") continue;
       owned.add(i);
-      if (p.provider !== "reward") bought.add(i);
+      if (p.provider !== "reward" && p.provider !== "promo") bought.add(i);
     }
   }
   return { payment: first?.status ?? "paid", owned: [...owned], bought: [...bought] };
