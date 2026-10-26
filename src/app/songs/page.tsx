@@ -357,7 +357,10 @@ export default function SongsPage() {
       {ready && song.promo && (
         <div className="card story-event" style={{ marginTop: 16 }}>
           <strong>🎉 오픈 기념 무료로 드린 노래예요</strong>
-          <span className="muted">받는 분이 처음 듣는 순간을 영상으로 보내 주시면 큰 힘이 돼요. 완성 메일에 답장으로 보내 주세요.</span>
+          <span className="muted">
+            받는 분이 처음 듣는 순간을 영상으로 보내 주시면 MP3와 가사 카드를 무료로 열어 드려요. 완성 메일에 답장으로 보내 주세요(주문번호{" "}
+            {song.orderNo}).
+          </span>
         </div>
       )}
       {ready && !song.promo && (

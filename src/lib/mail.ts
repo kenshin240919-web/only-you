@@ -92,7 +92,7 @@ export async function mailSongReady(env: CloudflareEnv, orderId: string, revised
   // 후기 이벤트 안내(처음 완성 때만). 오픈 기념 무료 주문은 혜택 대신 영상을 부탁한다.
   if (!revised && o.promo)
     lines.push(
-      `🎉 오픈 기념 무료로 드린 노래예요. 받는 분이 노래를 처음 듣는 순간을 영상으로 보내 주시면 큰 힘이 돼요. 이 메일에 답장으로 보내 주세요.`,
+      `🎉 오픈 기념 무료로 드린 노래예요. 받는 분이 노래를 처음 듣는 순간을 영상으로 보내 주시면 <strong>MP3와 가사 카드를 무료로</strong> 열어 드려요. 이 메일에 답장으로 보내 주세요(주문번호 함께).`,
     );
   else if (!revised)
     lines.push(
@@ -110,7 +110,7 @@ export async function mailSongReady(env: CloudflareEnv, orderId: string, revised
       revised
         ? ""
         : o.promo
-          ? "오픈 기념 무료로 드린 노래예요. 받는 분이 처음 듣는 순간을 영상으로 보내 주시면 큰 힘이 돼요(이 메일에 답장)."
+          ? "오픈 기념 무료로 드린 노래예요. 받는 분이 처음 듣는 순간을 영상으로 보내 주시면 MP3와 가사 카드를 무료로 열어 드려요(이 메일에 답장)."
           : `후기 이벤트: 노래를 처음 듣는 순간을 영상으로 보내 주시면 혜택을 드려요. ${site}/review-event`,
       `문의: ${BUSINESS.email} · ${BUSINESS.phone}`,
     ]
