@@ -36,7 +36,7 @@ ${paragraphs.map((p) => `<p style="margin:0 0 12px;font-size:15px;line-height:1.
 ${button ? `<p style="margin:24px 0 8px"><a href="${esc(button.href)}" style="display:inline-block;background:#e8735f;color:#fff;text-decoration:none;font-weight:700;padding:12px 22px;border-radius:999px">${esc(button.label)}</a></p>` : ""}
 ${foot ? `<p style="margin:16px 0 0;font-size:13px;line-height:1.6;color:#8a8f9c">${foot}</p>` : ""}
 </div>
-<p style="margin:20px 0 0;font-size:12px;line-height:1.6;color:#8a8f9c">이 메일은 Only U song 주문 안내로 발송됐어요. 문의: ${esc(BUSINESS.email)} · ${esc(BUSINESS.phone)}<br>상호 ${esc(BUSINESS.name)} · 사업자등록번호 ${esc(BUSINESS.regNo)}</p>
+<p style="margin:20px 0 0;font-size:12px;line-height:1.6;color:#8a8f9c">이 메일은 Only U song 주문 안내로 발송됐어요. 문의: <a href="${esc(BUSINESS.kakaoChat)}" style="color:#8a8f9c">카카오톡 채널 1:1 채팅</a> · ${esc(BUSINESS.email)} · ${esc(BUSINESS.phone)}<br>상호 ${esc(BUSINESS.name)} · 사업자등록번호 ${esc(BUSINESS.regNo)}</p>
 </div></body></html>`;
 }
 
@@ -97,12 +97,12 @@ export async function mailSongReady(env: CloudflareEnv, orderId: string, revised
   // 후기 이벤트 안내(처음 완성 때만). 오픈 기념 무료 주문은 혜택 대신 영상을 부탁한다.
   if (!revised && o.promo)
     lines.push(
-      `🎉 오픈 기념 무료로 드린 노래예요. 받는 분이 노래를 처음 듣는 순간을 영상으로 보내 주시면 <strong>MP3와 가사 카드를 무료로</strong> 열어 드려요. 이 메일에 답장으로 보내 주세요(주문번호 함께).`,
+      `🎉 오픈 기념 무료로 드린 노래예요. 받는 분이 노래를 처음 듣는 순간을 영상으로 보내 주시면 <strong>MP3와 가사 카드를 무료로</strong> 열어 드려요. <a href="${esc(BUSINESS.kakaoChat)}" style="color:#c9573f">카카오톡 채널</a>(또는 이 메일 답장)로 주문번호와 함께 보내 주세요.`,
       `⏰ <strong>${esc(due)}까지</strong> 영상을 보내 주세요. 기한이 지나면 노래 듣기(선물 링크 포함)가 정지돼요.`,
     );
   else if (!revised)
     lines.push(
-      `🎁 노래를 처음 듣는 순간을 영상으로 보내 주시면 MP3·가사 카드(올인원은 다음 노래 1곡)를 드려요. <a href="${esc(site)}/review-event" style="color:#c9573f">후기 이벤트 보기</a>`,
+      `🎁 노래를 처음 듣는 순간을 영상으로 <a href="${esc(BUSINESS.kakaoChat)}" style="color:#c9573f">카카오톡 채널</a>로 보내 주시면 MP3·가사 카드(올인원은 다음 노래 1곡)를 드려요. <a href="${esc(site)}/review-event" style="color:#c9573f">후기 이벤트 보기</a>`,
     );
   await send(env, {
     to: o.email,
@@ -116,9 +116,9 @@ export async function mailSongReady(env: CloudflareEnv, orderId: string, revised
       revised
         ? ""
         : o.promo
-          ? `오픈 기념 무료로 드린 노래예요. 받는 분이 처음 듣는 순간을 영상으로 보내 주시면 MP3와 가사 카드를 무료로 열어 드려요(이 메일에 답장). ${due}까지 보내지 않으면 노래 듣기가 정지돼요.`
+          ? `오픈 기념 무료로 드린 노래예요. 받는 분이 처음 듣는 순간을 영상으로 보내 주시면 MP3와 가사 카드를 무료로 열어 드려요. 카카오톡 채널(${BUSINESS.kakaoChat}) 또는 이 메일 답장으로 보내 주세요. ${due}까지 보내지 않으면 노래 듣기가 정지돼요.`
           : `후기 이벤트: 노래를 처음 듣는 순간을 영상으로 보내 주시면 혜택을 드려요. ${site}/review-event`,
-      `문의: ${BUSINESS.email} · ${BUSINESS.phone}`,
+      `문의: 카카오톡 채널 ${BUSINESS.kakaoChat} · ${BUSINESS.email} · ${BUSINESS.phone}`,
     ]
       .filter(Boolean)
       .join("\n"),
@@ -143,7 +143,7 @@ export async function mailSongFailed(env: CloudflareEnv, orderId: string): Promi
       undefined,
       "불편을 드려 죄송합니다.",
     ),
-    text: `주문번호 ${o.order_no}의 노래를 만드는 중에 문제가 생겼어요. 확인 후 추가 결제 없이 다시 만들어 드릴게요.\n환불을 원하시면 이 메일에 답장해 주세요.\n문의: ${BUSINESS.email} · ${BUSINESS.phone}`,
+    text: `주문번호 ${o.order_no}의 노래를 만드는 중에 문제가 생겼어요. 확인 후 추가 결제 없이 다시 만들어 드릴게요.\n환불을 원하시면 이 메일에 답장해 주세요.\n문의: 카카오톡 채널 ${BUSINESS.kakaoChat} · ${BUSINESS.email} · ${BUSINESS.phone}`,
   });
   if (env.ADMIN_EMAIL) {
     await send(env, {
@@ -188,7 +188,7 @@ export async function mailReward(env: CloudflareEnv, orderId: string, benefit: "
     to: o.email,
     subject: "[Only U song] 후기 혜택이 도착했어요",
     html: layout("후기 혜택이 도착했어요", lines, button),
-    text: `${text}\n문의: ${BUSINESS.email} · ${BUSINESS.phone}`,
+    text: `${text}\n문의: 카카오톡 채널 ${BUSINESS.kakaoChat} · ${BUSINESS.email} · ${BUSINESS.phone}`,
   });
 }
 

@@ -10,7 +10,6 @@ export const metadata: Metadata = {
 };
 
 export default function ReviewEventPage() {
-  const channel = BUSINESS.kakaoChannel;
   return (
     <article className="container narrow legal">
       <div className="page-head">
@@ -40,14 +39,10 @@ export default function ReviewEventPage() {
       <ol>
         <li>노래를 선물받은 분이 처음 듣는 순간을 영상으로 찍어 주세요. 글이나 사진 후기도 좋아요.</li>
         <li>
-          {channel ? (
-            <>
-              <a href={channel}>카카오톡 채널</a>
-            </>
-          ) : (
-            <>이메일({BUSINESS.email})</>
-          )}
-          로 <strong>주문번호</strong>, 영상(또는 글·사진), 후기에 표시할 이름(예: 김○○님)을 보내 주세요.
+          <a href={BUSINESS.kakaoChat} target="_blank" rel="noopener">
+            카카오톡 채널 &ldquo;Only U song 온리유송&rdquo;
+          </a>
+          (1:1 채팅) 또는 이메일({BUSINESS.email})로 <strong>주문번호</strong>, 영상(또는 글·사진), 후기에 표시할 이름(예: 김○○님)을 보내 주세요.
         </li>
         <li>확인 후 3영업일 안에 혜택을 드리고 주문할 때 쓴 이메일로 알려 드려요. MP3·가사 카드는 &lsquo;내 노래&rsquo;에서, 쿠폰은 주문 확인 화면에서 쓸 수 있어요.</li>
       </ol>
