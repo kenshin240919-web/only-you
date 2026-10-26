@@ -83,6 +83,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <Link href="/stories">후기</Link>
               <Link href="/review-event">후기 이벤트</Link>
             </p>
+            <a className="kakao-btn" href={BUSINESS.kakaoChat} target="_blank" rel="noopener">
+              💬 카카오톡으로 문의하기
+            </a>
             <p className="muted">
               상호 {BUSINESS.name} · 대표자 {BUSINESS.owner} · 사업자등록번호 {BUSINESS.regNo}
               <br />

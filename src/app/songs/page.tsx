@@ -217,7 +217,11 @@ export default function SongsPage() {
             </>
           ) : (
             <p style={{ margin: 0 }}>
-              이 노래는 지금 들을 수 없어요. 궁금한 점은 {BUSINESS.email}로 문의해 주세요.
+              이 노래는 지금 들을 수 없어요. 궁금한 점은{" "}
+              <a href={BUSINESS.kakaoChat} target="_blank" rel="noopener">
+                카카오톡 채널
+              </a>
+              이나 {BUSINESS.email}로 문의해 주세요.
             </p>
           )}
           {error && (
@@ -401,8 +405,11 @@ export default function SongsPage() {
         <div className="card story-event" style={{ marginTop: 16 }}>
           <strong>🎉 오픈 기념 무료로 드린 노래예요</strong>
           <span className="muted">
-            받는 분이 처음 듣는 순간을 영상으로 보내 주시면 MP3와 가사 카드를 무료로 열어 드려요. 완성 메일에 답장으로 보내 주세요(주문번호{" "}
-            {song.orderNo}).
+            받는 분이 처음 듣는 순간을 영상으로 보내 주시면 MP3와 가사 카드를 무료로 열어 드려요.{" "}
+            <a href={BUSINESS.kakaoChat} target="_blank" rel="noopener">
+              카카오톡 채널
+            </a>
+            로 주문번호 {song.orderNo}와 함께 보내 주세요.
             {deadline && (
               <>
                 <br />

@@ -84,7 +84,7 @@ export default function RefundPage() {
         <br />
         상호: {BUSINESS.name} · 대표자: {BUSINESS.owner} · 사업자등록번호: {BUSINESS.regNo}
         <br />
-        문의: {BUSINESS.email} · {BUSINESS.phone}
+        문의: 카카오톡 채널 &ldquo;Only U song 온리유송&rdquo;(<a href={BUSINESS.kakaoChat}>1:1 채팅</a>) · {BUSINESS.email} · {BUSINESS.phone}
       </p>
     </article>
   );
