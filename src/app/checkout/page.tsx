@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import EmptyState from "@/components/EmptyState";
 import PhoneField, { isPhone } from "@/components/PhoneField";
+import { closePayWindow, goPay, openPayWindow } from "@/components/payWindow";
 import { currentSource } from "@/components/SourceTracker";
 import { usePaymentProvider } from "@/components/usePaymentProvider";
 import { useOrder } from "@/components/useOrder";
@@ -48,6 +49,7 @@ export default function CheckoutPage() {
     // 페이앱이면 서버가 결제 대기 주문과 결제창 주소를 만들고, 결제 완료는 페이앱 알림으로 서버가 확인한다.
     setPaying(true);
     setError("");
+    const win = provider === "payapp" ? openPayWindow() : null;
     try {
       const res = await fetch("/api/orders", {
         method: "POST",
@@ -71,9 +73,12 @@ export default function CheckoutPage() {
         ownerToken: saved.ownerToken,
         giftToken: saved.giftToken,
       });
-      if (saved.payurl) window.location.href = saved.payurl;
-      else router.push("/orders");
+      // 결제창을 새 창으로 열었으면 이 창은 주문 상태 화면에서 결제 완료를 기다린다.
+      if (saved.payurl && !goPay(win, saved.payurl)) return;
+      closePayWindow(saved.payurl ? null : win);
+      router.push("/orders");
     } catch {
+      closePayWindow(win);
       setError("결제를 시작하지 못했어요. 잠시 후 다시 시도해 주세요.");
       setPaying(false);
     }
