@@ -117,6 +117,8 @@ const PURCHASES_SCHEMA = [
   "CREATE TABLE IF NOT EXISTS coupons (code TEXT PRIMARY KEY, kind TEXT NOT NULL, source_order_id TEXT, created_at TEXT NOT NULL, expires_at TEXT NOT NULL, used_order_id TEXT, used_at TEXT)",
   // migrations/0009_promo.sql
   "CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT NOT NULL)",
+  // migrations/0010_song_locks.sql
+  "CREATE TABLE IF NOT EXISTS song_locks (order_id TEXT PRIMARY KEY, state TEXT NOT NULL, updated_at TEXT NOT NULL)",
   "CREATE TABLE IF NOT EXISTS promo_claims (campaign TEXT NOT NULL, email TEXT NOT NULL, order_id TEXT NOT NULL, created_at TEXT NOT NULL, PRIMARY KEY (campaign, email))",
   `CREATE TABLE IF NOT EXISTS reviews (
     id TEXT PRIMARY KEY,

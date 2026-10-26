@@ -55,10 +55,12 @@ export async function listPromoClaims() {
   const db = await getDb();
   const { results } = await db
     .prepare(
-      `SELECT c.created_at, o.order_no, o.id order_id FROM promo_claims c JOIN orders o ON o.id = c.order_id
+      `SELECT c.created_at, o.order_no, o.id order_id,
+         EXISTS (SELECT 1 FROM rewards r WHERE r.order_id = o.id AND r.kind = 'video') video
+       FROM promo_claims c JOIN orders o ON o.id = c.order_id
        WHERE c.campaign = ? ORDER BY c.created_at`,
     )
     .bind(CAMPAIGN)
-    .all<{ created_at: string; order_no: string; order_id: string }>();
+    .all<{ created_at: string; order_no: string; order_id: string; video: number }>();
   return results;
 }

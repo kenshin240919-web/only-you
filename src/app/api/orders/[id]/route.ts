@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getDb, getOwnedOrder, getPurchases, getRevisions, getSong, ownership, songView } from "@/lib/db";
+import { songLock } from "@/lib/lock";
 import { type Item, MAX_REVISIONS, freeRevisions } from "@/lib/pricing";
 
 type Ctx = { params: Promise<{ id: string }> };
@@ -34,6 +35,8 @@ export async function GET(req: Request, { params }: Ctx) {
     // 결제창에서 돌아온 직후처럼 결제 확인을 기다리는 구매가 있으면 화면이 다시 확인한다.
     pendingPurchase: purchases.some((p) => p.status === "ready"),
     promo: purchases.some((p) => p.provider === "promo"),
+    // 듣기 정지 여부와 오픈 기념 무료의 영상 마감 시각.
+    lock: await songLock(row.id, purchases),
     revisions: revisionSummary(await getRevisions(row.id), own.bought),
     song: songView(await getSong(row.id)),
   });

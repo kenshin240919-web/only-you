@@ -40,14 +40,15 @@ ${foot ? `<p style="margin:16px 0 0;font-size:13px;line-height:1.6;color:#8a8f9c
 </div></body></html>`;
 }
 
-type OrderInfo = { email: string; order_no: string; gift_token: string; gift_enabled: number; title: string | null; error: string | null; promo: number };
+type OrderInfo = { email: string; order_no: string; gift_token: string; gift_enabled: number; title: string | null; error: string | null; promo: number; promo_at: string | null };
 
 async function orderInfo(orderId: string): Promise<OrderInfo | null> {
   const db = await getDb();
   return db
     .prepare(
       `SELECT o.email, o.order_no, o.gift_token, o.gift_enabled, s.title, s.error,
-         EXISTS (SELECT 1 FROM purchases p WHERE p.order_id = o.id AND p.provider = 'promo') promo
+         EXISTS (SELECT 1 FROM purchases p WHERE p.order_id = o.id AND p.provider = 'promo') promo,
+         (SELECT created_at FROM promo_claims c WHERE c.order_id = o.id) promo_at
        FROM orders o LEFT JOIN songs s ON s.order_id = o.id WHERE o.id = ?`,
     )
     .bind(orderId)
@@ -82,6 +83,10 @@ export async function mailSongReady(env: CloudflareEnv, orderId: string, revised
   const title = o.title ?? "맞춤 노래";
   const findUrl = `${site}/find?no=${encodeURIComponent(o.order_no)}`;
   const giftUrl = `${site}/gift/${o.gift_token}`;
+  // 오픈 기념 무료: 신청 후 7일 안에 반응 영상을 받아야 계속 들을 수 있다(src/lib/lock.ts).
+  const due = o.promo_at
+    ? new Date(new Date(o.promo_at).getTime() + 7 * 86400 * 1000).toLocaleString("ko-KR", { timeZone: "Asia/Seoul", month: "long", day: "numeric", hour: "numeric", minute: "2-digit" })
+    : "";
   const subject = revised ? `[Only U song] 수정한 노래가 완성됐어요 - ${title}` : `[Only U song] 노래가 완성됐어요 - ${title}`;
   const lines = [
     revised ? `요청하신 대로 다시 만든 노래 「${esc(title)}」가 완성됐어요.` : `주문하신 노래 「${esc(title)}」가 완성됐어요.`,
@@ -93,6 +98,7 @@ export async function mailSongReady(env: CloudflareEnv, orderId: string, revised
   if (!revised && o.promo)
     lines.push(
       `🎉 오픈 기념 무료로 드린 노래예요. 받는 분이 노래를 처음 듣는 순간을 영상으로 보내 주시면 <strong>MP3와 가사 카드를 무료로</strong> 열어 드려요. 이 메일에 답장으로 보내 주세요(주문번호 함께).`,
+      `⏰ <strong>${esc(due)}까지</strong> 영상을 보내 주세요. 기한이 지나면 노래 듣기(선물 링크 포함)가 정지돼요.`,
     );
   else if (!revised)
     lines.push(
@@ -110,7 +116,7 @@ export async function mailSongReady(env: CloudflareEnv, orderId: string, revised
       revised
         ? ""
         : o.promo
-          ? "오픈 기념 무료로 드린 노래예요. 받는 분이 처음 듣는 순간을 영상으로 보내 주시면 MP3와 가사 카드를 무료로 열어 드려요(이 메일에 답장)."
+          ? `오픈 기념 무료로 드린 노래예요. 받는 분이 처음 듣는 순간을 영상으로 보내 주시면 MP3와 가사 카드를 무료로 열어 드려요(이 메일에 답장). ${due}까지 보내지 않으면 노래 듣기가 정지돼요.`
           : `후기 이벤트: 노래를 처음 듣는 순간을 영상으로 보내 주시면 혜택을 드려요. ${site}/review-event`,
       `문의: ${BUSINESS.email} · ${BUSINESS.phone}`,
     ]
