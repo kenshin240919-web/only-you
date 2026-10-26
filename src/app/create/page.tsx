@@ -329,7 +329,7 @@ export default function CreatePage() {
               노래에 꼭 담고 싶은 추억이 있나요?
             </h1>
             <p className="step-help">언제, 어디서, 무엇을 했는지 구체적으로 쓸수록 노래가 특별해져요.</p>
-            <div className="tip">예: 첫 손녀 루리가 집에 오던 날, 엄마가 현관에서 한참을 안고 울었어요.</div>
+            <div className="tip">예: 첫 손녀 영희가 집에 오던 날, 엄마가 현관에서 한참을 안고 울었어요.</div>
             <TextArea
               label="추억"
               value={d.memory}
