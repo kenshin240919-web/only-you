@@ -1,4 +1,4 @@
-// 사업자 정보. saju.guidejung.com(이루리라)과 같은 사업자·페이앱 판매자 계정으로 운영한다.
+// 사업자 정보. saju.guidejung.com(이루리라)과 같은 사업자로 운영한다(페이앱 판매자 계정은 따로 onlyusong).
 export const BUSINESS = {
   name: "이루리라",
   owner: "김정현",
