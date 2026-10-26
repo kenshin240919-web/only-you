@@ -33,7 +33,7 @@ export async function GET(req: Request, { params }: Ctx) {
     ...own,
     // 결제창에서 돌아온 직후처럼 결제 확인을 기다리는 구매가 있으면 화면이 다시 확인한다.
     pendingPurchase: purchases.some((p) => p.status === "ready"),
-    revisions: revisionSummary(await getRevisions(row.id), own.owned),
+    revisions: revisionSummary(await getRevisions(row.id), own.bought),
     song: songView(await getSong(row.id)),
   });
 }

@@ -88,6 +88,11 @@ export async function mailSongReady(env: CloudflareEnv, orderId: string, revised
     "주문한 기기에서는 &lsquo;내 노래&rsquo;에서 바로 들을 수 있어요. 다른 기기에서는 아래 버튼을 누른 뒤 주문할 때 쓴 이메일을 입력하면 열려요.",
   ];
   if (o.gift_enabled) lines.push(`받는 분께 보낼 선물 링크: <a href="${esc(giftUrl)}" style="color:#c9573f">${esc(giftUrl)}</a>`);
+  // 후기 이벤트 안내(처음 완성 때만).
+  if (!revised)
+    lines.push(
+      `🎁 노래를 처음 듣는 순간을 영상으로 보내 주시면 MP3·가사 카드(올인원은 다음 노래 1곡)를 드려요. <a href="${esc(site)}/review-event" style="color:#c9573f">후기 이벤트 보기</a>`,
+    );
   await send(env, {
     to: o.email,
     subject,
@@ -97,6 +102,7 @@ export async function mailSongReady(env: CloudflareEnv, orderId: string, revised
       `주문번호: ${o.order_no}`,
       `내 노래 열기: ${findUrl} (주문할 때 쓴 이메일 입력)`,
       o.gift_enabled ? `선물 링크: ${giftUrl}` : "",
+      revised ? "" : `후기 이벤트: 노래를 처음 듣는 순간을 영상으로 보내 주시면 혜택을 드려요. ${site}/review-event`,
       `문의: ${BUSINESS.email} · ${BUSINESS.phone}`,
     ]
       .filter(Boolean)
@@ -135,4 +141,38 @@ export async function mailSongFailed(env: CloudflareEnv, orderId: string): Promi
       text: `제작 실패 ${o.order_no}\n오류: ${o.error ?? "알 수 없음"}\n관리자 화면: ${site}/admin`,
     });
   }
+}
+
+/** 후기 혜택을 지급했을 때 주문자에게 알린다. 쿠폰이면 쿠폰 번호와 쓰는 방법을 함께 보낸다. */
+export async function mailReward(env: CloudflareEnv, orderId: string, benefit: "addons" | "card" | "coupon", couponCode?: string): Promise<void> {
+  if (!mailEnabled(env)) return;
+  const o = await orderInfo(orderId);
+  if (!o) return;
+  const site = env.SITE_URL.replace(/\/$/, "");
+  const findUrl = `${site}/find?no=${encodeURIComponent(o.order_no)}`;
+  const thanks = "소중한 후기를 보내 주셔서 고맙습니다.";
+  let lines: string[];
+  let text: string;
+  let button: { label: string; href: string };
+  if (benefit === "coupon" && couponCode) {
+    lines = [
+      thanks,
+      `후기 혜택으로 <strong>다음 노래 1곡 무료 쿠폰</strong>을 드려요. (노래 듣기 · 선물 링크 포함, MP3와 가사 카드는 빠져요)`,
+      `쿠폰 번호: <strong style="font-size:18px;letter-spacing:1px">${esc(couponCode)}</strong>`,
+      "노래 만들기에서 이야기를 쓰고, 주문 확인 화면의 &lsquo;쿠폰 번호&rsquo; 칸에 입력하면 결제 없이 바로 만들어져요. 쿠폰은 1년 동안 한 번 쓸 수 있어요.",
+    ];
+    button = { label: "새 노래 만들기", href: `${site}/create` };
+    text = `${thanks}\n후기 혜택: 다음 노래 1곡 무료 쿠폰(노래 듣기만)\n쿠폰 번호: ${couponCode}\n노래 만들기(${site}/create) → 주문 확인의 쿠폰 번호 칸에 입력하세요. 1년 동안 한 번 쓸 수 있어요.`;
+  } else {
+    const what = benefit === "addons" ? "MP3 다운로드와 가사 카드" : "가사 카드";
+    lines = [thanks, `후기 혜택으로 <strong>${what}</strong>를 열어 드렸어요. &lsquo;내 노래&rsquo;에서 바로 받을 수 있어요.`, `주문번호: <strong>${esc(o.order_no)}</strong>`];
+    button = { label: "내 노래 열기", href: findUrl };
+    text = `${thanks}\n후기 혜택으로 ${what}를 열어 드렸어요. 내 노래: ${findUrl} (주문할 때 쓴 이메일 입력)\n주문번호: ${o.order_no}`;
+  }
+  await send(env, {
+    to: o.email,
+    subject: "[Only U song] 후기 혜택이 도착했어요",
+    html: layout("후기 혜택이 도착했어요", lines, button),
+    text: `${text}\n문의: ${BUSINESS.email} · ${BUSINESS.phone}`,
+  });
 }

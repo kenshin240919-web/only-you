@@ -45,6 +45,22 @@ export async function createPurchase(
   return { purchaseId: id, payurl: pay.payurl };
 }
 
+/**
+ * 돈을 받지 않는 구매(0원, 결제 완료)를 남긴다. reward는 후기 혜택, coupon은 무료 노래 쿠폰.
+ * 노래가 들어 있으면 applyPaid가 제작을 시작한다.
+ */
+export async function createFreePurchase(orderId: string, items: Item[], provider: "reward" | "coupon"): Promise<string> {
+  const db = await getDb();
+  const id = `pur_${randomToken(16)}`;
+  const now = new Date().toISOString();
+  await db
+    .prepare("INSERT INTO purchases (id, order_id, items, amount, provider, status, created_at, paid_at) VALUES (?, ?, ?, 0, ?, 'paid', ?, ?)")
+    .bind(id, orderId, JSON.stringify(items), provider, now, now)
+    .run();
+  await applyPaid(id);
+  return id;
+}
+
 /** 결제가 끝난 구매의 상품을 적용한다. 노래는 제작을 시작하고, 유료 수정은 연결된 수정 요청을 시작한다. */
 export async function applyPaid(purchaseId: string): Promise<void> {
   const db = await getDb();

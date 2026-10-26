@@ -112,6 +112,21 @@ const PURCHASES_SCHEMA = [
   // migrations/0007_sources.sql
   "CREATE TABLE IF NOT EXISTS visits (day TEXT NOT NULL, src TEXT NOT NULL, n INTEGER NOT NULL, PRIMARY KEY (day, src))",
   "CREATE TABLE IF NOT EXISTS order_sources (order_id TEXT PRIMARY KEY, src TEXT NOT NULL)",
+  // migrations/0008_rewards.sql
+  "CREATE TABLE IF NOT EXISTS rewards (order_id TEXT NOT NULL, kind TEXT NOT NULL, benefit TEXT NOT NULL, coupon_code TEXT, created_at TEXT NOT NULL, PRIMARY KEY (order_id, kind))",
+  "CREATE TABLE IF NOT EXISTS coupons (code TEXT PRIMARY KEY, kind TEXT NOT NULL, source_order_id TEXT, created_at TEXT NOT NULL, expires_at TEXT NOT NULL, used_order_id TEXT, used_at TEXT)",
+  `CREATE TABLE IF NOT EXISTS reviews (
+    id TEXT PRIMARY KEY,
+    order_id TEXT,
+    name TEXT NOT NULL,
+    occasion TEXT NOT NULL,
+    body TEXT NOT NULL,
+    video_key TEXT,
+    video_type TEXT,
+    rewarded INTEGER NOT NULL,
+    published INTEGER NOT NULL DEFAULT 1,
+    created_at TEXT NOT NULL
+  )`,
 ];
 
 // 생성 요청이 이 시간 안에 끝나지 않으면 작업이 중단된 것으로 본다.
@@ -160,7 +175,8 @@ export type PurchaseRow = {
   order_id: string;
   items: string;
   amount: number;
-  provider: "payapp" | "mock";
+  // reward: 후기 혜택으로 준 상품(0원), coupon: 무료 노래 쿠폰으로 만든 주문(0원)
+  provider: "payapp" | "mock" | "reward" | "coupon";
   status: PaymentStatus;
   provider_ref: string | null;
   created_at: string;
@@ -191,13 +207,24 @@ export async function getRevisions(orderId: string): Promise<RevisionRow[]> {
 
 export const purchaseItems = (p: PurchaseRow) => JSON.parse(p.items) as Item[];
 
-/** 처음 주문(노래)의 결제 상태와 결제가 끝난 상품 목록. 결제 기록이 없는 시제품 주문은 모두 가진 것으로 본다. */
-export function ownership(purchases: PurchaseRow[]): { payment: PaymentStatus; owned: Item[] } {
-  if (!purchases.length) return { payment: "paid", owned: ["song", "mp3", "card"] };
+/**
+ * 처음 주문(노래)의 결제 상태와 결제가 끝난 상품 목록. 결제 기록이 없는 시제품 주문은 모두 가진 것으로 본다.
+ * bought는 후기 혜택(reward)으로 받은 상품을 뺀 목록이다. 올인원 혜택(수정 3회 무료 · 후기 쿠폰)은 bought로 판단한다.
+ */
+export function ownership(purchases: PurchaseRow[]): { payment: PaymentStatus; owned: Item[]; bought: Item[] } {
+  if (!purchases.length) return { payment: "paid", owned: ["song", "mp3", "card"], bought: ["song", "mp3", "card"] };
   const first = purchases.find((p) => purchaseItems(p).includes("song"));
   const owned = new Set<Item>();
-  for (const p of purchases) if (p.status === "paid") for (const i of purchaseItems(p)) if (i !== "revision") owned.add(i);
-  return { payment: first?.status ?? "paid", owned: [...owned] };
+  const bought = new Set<Item>();
+  for (const p of purchases) {
+    if (p.status !== "paid") continue;
+    for (const i of purchaseItems(p)) {
+      if (i === "revision") continue;
+      owned.add(i);
+      if (p.provider !== "reward") bought.add(i);
+    }
+  }
+  return { payment: first?.status ?? "paid", owned: [...owned], bought: [...bought] };
 }
 
 export async function getSong(orderId: string): Promise<SongRow | null> {

@@ -28,6 +28,8 @@ npm run dev      # http://localhost:3000
 
 ## Cloudflare 배포
 
+- **대시보드에서 비밀 값을 바꾸면 "저장" 뒤에 배포 탭에서 그 버전을 "버전 승격"해야 적용된다.** (2026-10-26 ElevenLabs 키 교체 때 확인)
+
 사이트 주소는 **https://song.guidejung.com** 입니다(Worker 사용자 지정 도메인). 예전 `only-you.kenshin240919.workers.dev` 주소도 계속 열려 있습니다.
 
 Cloudflare Workers에 [OpenNext](https://opennext.js.org/cloudflare)로 배포합니다. 설정은 `wrangler.jsonc`, `open-next.config.ts`에 있습니다.
@@ -95,6 +97,18 @@ saju.guidejung.com과 같은 페이앱 판매자 계정·방식으로 건별 결
 - 홍보 링크 뒤에 `?src=이름`(영문 소문자·숫자·`-`·`_`, 24자까지)을 붙이면 관리자 화면 "유입 경로" 표에 방문·주문·결제·매출이 따로 집계됩니다. 예: `https://song.guidejung.com/?src=insta`
 - `?src`가 없으면 이전 사이트 주소로 짐작합니다(네이버·구글·인스타그램·사주 이루리라 등, 모르면 `other`, 알 수 없으면 `direct`).
 - 경로는 그 기기에 30일 동안 기억되고 주문할 때 `order_sources`에 남습니다. 방문은 브라우저 세션당 1번, 날짜·경로별 합계(`visits`)만 저장합니다. 스키마: `migrations/0007_sources.sql`.
+
+## 후기 이벤트 · 무료 노래 쿠폰 · 후기 코너
+
+- 안내: `/review-event`, 후기 코너: `/stories`(RSS `/stories/rss.xml`). 완성 메일과 '내 노래' 화면에 이벤트 안내가 붙는다.
+- 손님이 카카오톡 채널(`src/lib/business.ts`의 `kakaoChannel`, 비어 있으면 이메일)로 후기를 보내면, 관리자 주문 상세의 **후기 혜택** 버튼으로 지급한다(주문자에게 메일).
+  - 반응 영상: 노래만 산 주문은 MP3 + 가사 카드(0원 구매 `provider = reward`), 올인원 주문은 다음 노래 1곡 무료 쿠폰(`SONG-XXXX-XXXX`, 1년, 노래 듣기만)
+  - 글·사진 후기: 가사 카드. 주문당 종류별 1번(`rewards`).
+  - 혜택으로 받은 MP3·가사 카드는 올인원 혜택(수정 3회 무료)에 넣지 않는다(`ownership().bought`).
+  - 노래 결제가 취소되면 혜택 구매는 취소, 쓰지 않은 쿠폰은 만료된다.
+- 쿠폰은 주문 확인 화면의 "무료 노래 쿠폰" 칸에 넣으면 추가 상품 없이 0원 주문(`provider = coupon`)이 된다.
+- 후기 코너 글·영상은 관리자 화면 "후기 코너 올리기"에서 게시 동의를 확인하고 올린다(영상 95MB까지, R2 `reviews/`). 숨기기·지우기(영상 파일도 삭제) 가능.
+- 스키마: `migrations/0008_rewards.sql`.
 
 ## 알림 메일 (Cloudflare Email Service)
 

@@ -1,12 +1,13 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import AdminReviews from "@/components/AdminReviews";
 import AdminSources from "@/components/AdminSources";
 import LyricsSheet from "@/components/LyricsSheet";
 import type { Draft, Lyrics } from "@/lib/draft";
 import { genreLabel, reasonLabel, relationshipLabel } from "@/lib/draft";
 import { GENRES, VOCALS, labelOf } from "@/lib/options";
-import { ITEM_LABELS, type Item, formatWon } from "@/lib/pricing";
+import { ITEM_LABELS, type Item, formatWon, isAllInOne } from "@/lib/pricing";
 
 type Summary = {
   ordersToday: number;
@@ -48,6 +49,8 @@ type Detail = {
   draft: Draft;
   payment: string;
   owned: Item[];
+  bought: Item[];
+  rewards: { kind: "video" | "text"; benefit: string; couponCode: string | null; createdAt: string }[];
   purchases: { id: string; items: Item[]; amount: number; provider: string; status: string; providerRef: string | null; createdAt: string; paidAt: string | null }[];
   revisions: { id: string; paid: boolean; status: string; request: { genre?: string; vocal?: string; note?: string }; createdAt: string }[];
   song: { status: string; title: string | null; lyrics: Lyrics | null; audioKey: string | null; error: string | null; startedAt: string; finishedAt: string | null } | null;
@@ -61,6 +64,8 @@ const SONG_STATUS: Record<string, string> = {
   none: "제작 전",
 };
 const PAY_STATUS: Record<string, string> = { ready: "결제 대기", paid: "결제 완료", cancelled: "취소" };
+const PROVIDER: Record<string, string> = { mock: "모의 결제", reward: "후기 혜택", coupon: "무료 쿠폰" };
+const BENEFIT: Record<string, string> = { addons: "MP3 + 가사 카드", card: "가사 카드", coupon: "다음 노래 1곡 무료 쿠폰" };
 
 const kst = (iso: string | null) =>
   iso ? new Date(iso).toLocaleString("ko-KR", { timeZone: "Asia/Seoul", month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit" }) : "-";
@@ -126,7 +131,7 @@ export default function AdminPage() {
     setMessage("");
     const r = await fetch(`/api/admin/orders/${detail.id}`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
     const data = (await r.json().catch(() => ({}))) as { message?: string };
-    setMessage(r.ok ? "처리했어요." : (data.message ?? "처리하지 못했어요."));
+    setMessage(r.ok ? (data.message ?? "처리했어요.") : (data.message ?? "처리하지 못했어요."));
     setBusy(false);
     await Promise.all([loadDetail(detail.id), loadList()]);
   };
@@ -225,6 +230,7 @@ export default function AdminPage() {
       )}
 
       {summary && <AdminSources />}
+      {summary && <AdminReviews />}
 
       <p className="muted" style={{ margin: "0 0 12px", fontSize: 14 }}>
         <button
@@ -323,7 +329,7 @@ export default function AdminPage() {
                     {p.items.map((i) => ITEM_LABELS[i]).join(" + ")}
                     <br />
                     <small className="muted">
-                      {p.provider === "payapp" ? `페이앱 ${p.providerRef ?? ""}` : "모의 결제"} · {kst(p.paidAt ?? p.createdAt)}
+                      {p.provider === "payapp" ? `페이앱 ${p.providerRef ?? ""}` : (PROVIDER[p.provider] ?? p.provider)} · {kst(p.paidAt ?? p.createdAt)}
                     </small>
                   </span>
                   <span className="admin-pay-right">
@@ -350,6 +356,39 @@ export default function AdminPage() {
               <small className="muted">
                 환불은 페이앱 판매자 화면에서 결제를 취소하면 자동으로 여기에 반영돼요. 반영되지 않았을 때만 &lsquo;취소로 표시&rsquo;를 쓰세요.
               </small>
+            </div>
+
+            <div className="card stack">
+              <strong>후기 혜택</strong>
+              <p className="muted" style={{ margin: 0, fontSize: 14 }}>
+                받은 후기를 확인한 뒤 눌러 주세요. 내용이 좋든 아니든 솔직한 후기면 드려요. 지급하면 주문자에게 메일이 가요.
+                <br />
+                반응 영상: {isAllInOne(detail.bought) ? "올인원이라 다음 노래 1곡 무료 쿠폰" : "MP3 + 가사 카드"} · 글·사진 후기: 가사 카드
+              </p>
+              {detail.rewards.map((r) => (
+                <small key={r.kind} className="muted">
+                  {kst(r.createdAt)} · {r.kind === "video" ? "반응 영상" : "글·사진 후기"} → {BENEFIT[r.benefit] ?? r.benefit}
+                  {r.couponCode && ` (${r.couponCode})`}
+                </small>
+              ))}
+              <div className="row-between" style={{ gap: 8, padding: 0 }}>
+                <button
+                  type="button"
+                  className="btn"
+                  disabled={busy || detail.rewards.some((r) => r.kind === "video")}
+                  onClick={() => act({ action: "reward", kind: "video" }, "반응 영상 후기 혜택을 드릴까요? 주문자에게 메일이 가요.")}
+                >
+                  반응 영상 혜택
+                </button>
+                <button
+                  type="button"
+                  className="btn-ghost"
+                  disabled={busy || detail.rewards.some((r) => r.kind === "text")}
+                  onClick={() => act({ action: "reward", kind: "text" }, "글·사진 후기 혜택(가사 카드)을 드릴까요? 주문자에게 메일이 가요.")}
+                >
+                  글·사진 후기 혜택
+                </button>
+              </div>
             </div>
 
             <div className="card stack">
