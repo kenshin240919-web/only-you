@@ -33,7 +33,7 @@ export default function CheckoutPage() {
   const [coupon, setCoupon] = useState("");
   const [couponOk, setCouponOk] = useState(false);
   const [couponMsg, setCouponMsg] = useState("");
-  // 오픈 기념 선착순 무료(올인원 0원). 진행 중이면 기본으로 고른다.
+  // 오픈 기념 선착순 무료(노래 0원, MP3·가사 카드는 반응 영상 후기 혜택). 진행 중이면 기본으로 고른다.
   const promoInfo = usePromo();
   const [promoOff, setPromoOff] = useState(false);
   const [promoMsg, setPromoMsg] = useState("");
@@ -51,7 +51,7 @@ export default function CheckoutPage() {
   const d = order.draft;
   const promo = Boolean(promoInfo) && !promoOff;
   const free = promo || couponOk;
-  const items: Item[] = promo ? ["song", "mp3", "card"] : couponOk ? ["song"] : ["song", ...addons];
+  const items: Item[] = free ? ["song"] : ["song", ...addons];
   const total = free ? 0 : priceOf(items);
   const allInOne = !free && addons.length === 2;
 
@@ -171,7 +171,7 @@ export default function CheckoutPage() {
               <input
                 id={`addon-${a.item}`}
                 type="checkbox"
-                checked={promo || (!couponOk && addons.includes(a.item))}
+                checked={!free && addons.includes(a.item)}
                 disabled={free}
                 onChange={() => toggle(a.item)}
               />
@@ -204,7 +204,7 @@ export default function CheckoutPage() {
           {promo && (
             <div className="row-between bundle-note">
               <span>오픈 기념 무료</span>
-              <span>-{formatWon(PRICES.bundle)}</span>
+              <span>-{formatWon(PRICES.song)}</span>
             </div>
           )}
           {couponOk && !promo && (
@@ -240,8 +240,8 @@ export default function CheckoutPage() {
             <strong>🎉 오픈 기념 무료로 받기</strong>
             <br />
             <small className="muted">
-              선착순 {promoInfo.limit}명 · 남은 자리 {promoInfo.left}개 · 노래 + MP3 + 가사 카드를 0원으로(수정 1회). 받는 분이 처음 듣는 순간을
-              영상으로 보내 주시면 큰 힘이 돼요.
+              선착순 {promoInfo.limit}명 · 남은 자리 {promoInfo.left}개 · 노래(무제한 듣기 · 선물 링크 · 수정 1회)를 0원으로. 받는 분이 처음 듣는
+              순간을 영상으로 보내 주시면 MP3와 가사 카드도 무료로 열어 드려요.
             </small>
           </span>
         </label>

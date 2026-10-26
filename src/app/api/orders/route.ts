@@ -31,7 +31,7 @@ export async function POST(req: Request) {
   }
   const draft = parseDraft(body.draft);
   if (!draft) return NextResponse.json({ error: "invalid" }, { status: 400 });
-  // 오픈 기념 무료는 올인원을 결제 없이 만든다(자리는 주문을 만든 뒤 잡는다).
+  // 오픈 기념 무료는 노래(듣기 · 선물 링크)를 결제 없이 만든다(자리는 주문을 만든 뒤 잡는다). MP3·가사 카드는 반응 영상 후기 혜택으로 연다.
   const promo = body.promo === true;
   if (promo && !(await promoStatus()).active) return NextResponse.json({ error: "promo_closed" }, { status: 400 });
   // 무료 노래 쿠폰은 노래 듣기만(MP3·가사 카드 제외) 결제 없이 만든다.
@@ -77,7 +77,7 @@ export async function POST(req: Request) {
       await removeOrder();
       return NextResponse.json({ error: claim === "used" ? "promo_used" : "promo_closed" }, { status: 400 });
     }
-    await createFreePurchase(id, ["song", "mp3", "card"], "promo");
+    await createFreePurchase(id, ["song"], "promo");
     const st = await promoStatus();
     await mailAdminPromo(env, orderNo, st.used, st.limit);
     return NextResponse.json({ id, ownerToken, giftToken, orderNo, paidAt: now, payurl: null }, { status: 201 });

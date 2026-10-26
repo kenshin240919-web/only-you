@@ -4,12 +4,12 @@ import { getDb, getPurchases, ownership, randomToken } from "./db";
 import { isAllInOne } from "./pricing";
 
 // 후기 이벤트(2026-10-26 결정). 솔직한 후기면 내용과 관계없이 지급한다.
-// - 반응 영상: 노래만 산 주문은 MP3 + 가사 카드, 올인원 주문은 다음 노래 1곡 무료 쿠폰(노래 듣기만)
+// - 반응 영상: 노래만 산 주문(오픈 기념 무료 포함)은 MP3 + 가사 카드, 올인원 주문은 다음 노래 1곡 무료 쿠폰(노래 듣기만)
 // - 글·사진 후기: 가사 카드
 export type RewardKind = "video" | "text";
 export type RewardResult =
   | { ok: true; benefit: "addons" | "card" | "coupon"; couponCode?: string }
-  | { ok: false; reason: "already" | "not_paid" | "nothing" | "promo" };
+  | { ok: false; reason: "already" | "not_paid" | "nothing" };
 
 export const COUPON_DAYS = 365;
 
@@ -36,8 +36,6 @@ export async function grantReward(orderId: string, kind: RewardKind): Promise<Re
   const db = await getDb();
   const { payment, owned, bought } = ownership(await getPurchases(orderId));
   if (payment !== "paid") return { ok: false, reason: "not_paid" };
-  // 오픈 기념 무료 주문은 이미 올인원을 받아서 후기 혜택 대상이 아니다.
-  if (!bought.includes("song")) return { ok: false, reason: "promo" };
 
   let benefit: "addons" | "card" | "coupon";
   if (kind === "video") benefit = isAllInOne(bought) ? "coupon" : "addons";

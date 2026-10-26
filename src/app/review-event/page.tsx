@@ -24,7 +24,7 @@ export default function ReviewEventPage() {
           <strong>반응 영상 후기</strong> (노래를 처음 듣는 순간)
           <ul>
             <li>
-              노래만 구매하신 분: <strong>MP3 다운로드 + 가사 카드</strong> 무료 ({formatWon(PRICES.mp3 + PRICES.card)} 상당)
+              노래만 구매하신 분 · 오픈 기념 무료로 받으신 분: <strong>MP3 다운로드 + 가사 카드</strong> 무료 ({formatWon(PRICES.mp3 + PRICES.card)} 상당)
             </li>
             <li>
               올인원으로 구매하신 분: <strong>다음 노래 1곡 무료 쿠폰</strong> (노래 듣기 · 선물 링크 포함, MP3·가사 카드 제외, 1년 안에 1번)

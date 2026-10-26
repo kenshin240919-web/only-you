@@ -24,7 +24,7 @@ export default function AdminPromo() {
   }, [load]);
 
   const save = async (enabled: boolean) => {
-    if (enabled && !window.confirm(`오픈 기념 무료를 켤까요? 선착순 ${limit}명(지금까지 ${p?.used ?? 0}명 포함)까지 올인원을 무료로 드려요.`)) return;
+    if (enabled && !window.confirm(`오픈 기념 무료를 켤까요? 선착순 ${limit}명(지금까지 ${p?.used ?? 0}명 포함)까지 노래를 무료로 드려요.`)) return;
     setBusy(true);
     await fetch("/api/admin/promo", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ enabled, limit }) });
     setBusy(false);
@@ -35,11 +35,12 @@ export default function AdminPromo() {
   return (
     <section className={p.active ? "card stack stat warn" : "card stack"} style={{ marginBottom: 16 }} aria-label="오픈 기념 무료">
       <div className="row-between" style={{ padding: 0 }}>
-        <strong>🎉 오픈 기념 무료 (올인원 · 수정 1회)</strong>
+        <strong>🎉 오픈 기념 무료 (노래 · 수정 1회)</strong>
         <span className={p.active ? "chip pay-paid" : "chip chip-muted"}>{p.active ? "진행 중" : p.enabled ? "마감" : "꺼짐"}</span>
       </div>
       <p className="muted" style={{ margin: 0, fontSize: 14 }}>
-        받은 사람 {p.used}명 / 인원 {p.limit}명 · 남은 자리 {p.left}. 인원이 차면 자동으로 마감되고, 주문마다 운영자 메일이 가요.
+        받은 사람 {p.used}명 / 인원 {p.limit}명 · 남은 자리 {p.left}. 인원이 차면 자동으로 마감되고, 주문마다 운영자 메일이 가요. 반응 영상을
+        받으면 그 주문의 &lsquo;반응 영상 혜택&rsquo;으로 MP3·가사 카드를 열어 주세요.
       </p>
       <div className="row-between" style={{ gap: 8, padding: 0 }}>
         <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 14 }}>
