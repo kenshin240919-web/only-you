@@ -1,0 +1,15 @@
+# 소개·예시·약관 화면만 검색에 노출한다. 주문·선물·관리자 화면과 API는 막는다.
+# 다음 웹마스터도구 소유 확인(아래 줄은 지우지 않는다).
+#DaumWebMasterTool:249f2ba6d6c5eebb43cc65329d27914806855b47dc7a3fd37d9f40dca94d1218:dSlZXvWuL7UAVoESNn1QCg==
+
+User-Agent: *
+Allow: /
+Disallow: /api/
+Disallow: /admin
+Disallow: /checkout
+Disallow: /orders
+Disallow: /songs
+Disallow: /find
+Disallow: /gift/
+
+Sitemap: https://song.guidejung.com/sitemap.xml

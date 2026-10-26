@@ -23,6 +23,13 @@ export const metadata: Metadata = {
     images: [{ url: "/og.png", width: 1200, height: 630, alt: "선글라스를 끼고 노래하는 말 캐릭터와 Only U song" }],
   },
   twitter: { card: "summary_large_image" },
+  // 검색엔진 소유 확인(네이버 서치어드바이저 · 빙 웹마스터 도구). 다음은 public/robots.txt에 있다.
+  verification: {
+    other: {
+      "naver-site-verification": "4fb52d3a0772c94b3a99973cdb72487171ffb2e9",
+      "msvalidate.01": "94FB5F5FCBAB10DABDC0256A035F8369",
+    },
+  },
 };
 
 export const viewport: Viewport = {
