@@ -9,6 +9,6 @@ export const BUSINESS = {
   email: "lbkneon275@naver.com",
   // Only U song 카카오톡 채널(2026-10-26 개설, 검색용 아이디 "온리유송"). 1:1 문의 · 후기 영상 받기에 쓴다.
   kakaoChannel: "https://pf.kakao.com/_XjxIWX",
-  // 1:1 채팅 주소(/chat)는 채널의 채팅 설정이 켜지고 공개된 뒤에만 열려서, 우선 채널 홈(채팅 버튼 있음)으로 보낸다.
-  kakaoChat: "https://pf.kakao.com/_XjxIWX",
+  // 1:1 채팅 바로 열기(2026-10-27 채팅 켬 확인).
+  kakaoChat: "https://pf.kakao.com/_XjxIWX/chat",
 };
