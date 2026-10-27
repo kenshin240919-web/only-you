@@ -1,6 +1,6 @@
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { forbidden, isAdmin } from "@/lib/admin";
-import { type OrderRow, type SongRow, getDb, getPurchases, getRevisions, ownership, purchaseItems } from "@/lib/db";
+import { type OrderRow, type SongRow, getDb, staleBefore, getPurchases, getRevisions, ownership, purchaseItems } from "@/lib/db";
 import type { Draft, Lyrics } from "@/lib/draft";
 import { setSongLock, songLock } from "@/lib/lock";
 import { mailReward } from "@/lib/mail";
@@ -49,7 +49,8 @@ export async function GET(req: Request, { params }: Ctx) {
     revisions: revisions.map((r) => ({ id: r.id, paid: r.paid === 1, status: r.status, request: JSON.parse(r.request_json), createdAt: r.created_at })),
     song: song
       ? {
-          status: song.status,
+          // 10분 넘게 만드는 중으로 멈췄으면 실패로 보여 줘 다시 만들 수 있게 한다.
+          status: song.status === "generating" && song.started_at < staleBefore() ? "failed" : song.status,
           title: song.title,
           lyrics: song.lyrics_json ? (JSON.parse(song.lyrics_json) as Lyrics) : null,
           audioKey: song.audio_key,
@@ -149,8 +150,9 @@ export async function POST(req: Request, { params }: Ctx) {
       return Response.json({ error: r.reason, message }, { status: 409 });
     }
     const { env } = await getCloudflareContext({ async: true });
-    await mailReward(env, id, r.benefit, r.couponCode);
-    const message = { addons: "MP3·가사 카드를 열어 드렸어요.", card: "가사 카드를 열어 드렸어요.", coupon: `무료 노래 쿠폰 ${r.couponCode}을 메일로 보냈어요.` }[r.benefit];
+    await mailReward(env, id, r.benefit, r.couponCode, r.items);
+    const opened = (r.items ?? []).map((i) => (i === "mp3" ? "MP3" : "가사 카드")).join("·");
+    const message = r.benefit === "coupon" ? `무료 노래 쿠폰 ${r.couponCode}을 메일로 보냈어요.` : `${opened}를 열어 드렸어요.`;
     return Response.json({ ok: true, message });
   }
 

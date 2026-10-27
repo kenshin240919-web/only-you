@@ -23,7 +23,7 @@ export default async function StoriesPage() {
 
       <Link href="/review-event" className="card story-event">
         <strong>🎁 후기 이벤트</strong>
-        <span className="muted">노래를 처음 듣는 순간을 영상으로 보내 주시면 MP3·가사 카드(올인원은 다음 노래 1곡)를 드려요 →</span>
+        <span className="muted">노래를 처음 듣는 순간을 영상으로 보내 주시면 MP3·가사 카드(올인원은 다음 노래 1곡 무료 쿠폰)를, 글·사진 후기는 가사 카드를 드려요 →</span>
       </Link>
 
       {reviews.length === 0 && <p className="muted" style={{ marginTop: 24 }}>첫 후기를 기다리고 있어요.</p>}

@@ -42,7 +42,7 @@ export const GENRES: (Option & { desc: string })[] = [
   { value: "ballad", label: "발라드", desc: "잔잔한 피아노와 따뜻한 감성" },
   { value: "acoustic", label: "어쿠스틱", desc: "기타 한 대처럼 담백하게" },
   { value: "pop", label: "밝은 팝", desc: "경쾌하고 산뜻한 리듬" },
-  { value: "trot", label: "트로트", desc: "흥겹고 정겨운 가락 (품질 시험 중)" },
+  { value: "trot", label: "트로트", desc: "흥겹고 정겨운 가락 (새로 추가 · 다른 장르보다 결과가 고르지 않을 수 있어요)" },
 ];
 
 export const VOCALS: Option[] = [

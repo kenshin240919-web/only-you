@@ -1,6 +1,6 @@
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { forbidden, isAdmin } from "@/lib/admin";
-import { getDb } from "@/lib/db";
+import { getDb, staleBefore } from "@/lib/db";
 
 // 음악 생성 1분에 드는 크레딧. 실제 사용량 기준(2026-10-26 첫 실제 주문 1곡 = 1,625크레딧 → 1분 650).
 const CREDITS_PER_MINUTE = 650;
@@ -40,10 +40,14 @@ export async function GET(req: Request) {
   const [ordersToday, ordersMonth, revToday, revMonth, gens, songs] = await Promise.all([
     one<{ n: number }>("SELECT count(*) n FROM orders WHERE created_at >= ?", today),
     one<{ n: number }>("SELECT count(*) n FROM orders WHERE created_at >= ?", month),
-    one<{ s: number; n: number }>("SELECT coalesce(sum(amount),0) s, count(*) n FROM purchases WHERE status = 'paid' AND paid_at >= ?", today),
-    one<{ s: number; n: number }>("SELECT coalesce(sum(amount),0) s, count(*) n FROM purchases WHERE status = 'paid' AND paid_at >= ?", month),
+    one<{ s: number; n: number }>("SELECT coalesce(sum(amount),0) s, count(*) n FROM purchases WHERE status = 'paid' AND amount > 0 AND paid_at >= ?", today),
+    one<{ s: number; n: number }>("SELECT coalesce(sum(amount),0) s, count(*) n FROM purchases WHERE status = 'paid' AND amount > 0 AND paid_at >= ?", month),
     one<{ n: number }>("SELECT count(*) n FROM generations WHERE created_at >= ?", cyc.start),
-    db.prepare("SELECT status, count(*) n FROM songs GROUP BY status").all<{ status: string; n: number }>(),
+    // 10분 넘게 만드는 중으로 멈춘 노래는 실패로 센다.
+    db
+      .prepare("SELECT CASE WHEN status = 'generating' AND started_at < ? THEN 'failed' ELSE status END st, count(*) n FROM songs GROUP BY st")
+      .bind(staleBefore())
+      .all<{ st: string; n: number }>(),
   ]);
   const before = cyc.start < LOG_START ? Number(env.MUSIC_CREDITS_BEFORE_LOG) || 0 : 0;
   const used = before + gens.n * MINUTES_PER_SONG * CREDITS_PER_MINUTE;
@@ -62,6 +66,6 @@ export async function GET(req: Request) {
     creditsCycle: used,
     planCredits,
     songsLeft: Math.max(0, Math.floor((planCredits - used) / (MINUTES_PER_SONG * CREDITS_PER_MINUTE))),
-    songs: Object.fromEntries(songs.results.map((r) => [r.status, r.n])),
+    songs: Object.fromEntries(songs.results.map((r) => [r.st, r.n])),
   });
 }

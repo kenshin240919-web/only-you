@@ -1,7 +1,7 @@
 import "server-only";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { getDb } from "./db";
-import { mailSongFailed, mailSongReady } from "./mail";
+import { mailRevisionFailed, mailSongFailed, mailSongReady } from "./mail";
 import { type Draft, type LyricSection, type Lyrics, callName, reasonLabel, relationshipLabel } from "./draft";
 
 // 가사도 ElevenLabs가 사연을 받아 직접 쓴다(A안). 결정 근거와 Claude 가사(B안)로 바꾸는 방법은 docs/DECISIONS.md.
@@ -111,16 +111,39 @@ export type RevisionRequest = { genre?: string; vocal?: string; note?: string };
 // 생성 1회마다 기록한다. 관리자 화면이 이번 달 ElevenLabs 사용량(곡당 2.5분)을 세는 근거다.
 export type GenerationKind = "first" | "revision" | "admin";
 
-async function generate(env: CloudflareEnv, orderId: string, draft: Draft, fallbackTitle: string, kind: GenerationKind, suffix = "", note = "") {
-  await produce(env, orderId, draft, fallbackTitle, kind, suffix, note);
-  // 결과를 주문자(완성)나 주문자·운영자(실패)에게 메일로 알린다. 메일이 꺼져 있으면 아무것도 하지 않는다.
+// 다시 만들기를 시작한 수정 요청. 실패하면 이 수정은 횟수에서 빼도록 failed로 바꾼다.
+type Options = { suffix?: string; note?: string; revisionId?: string };
+
+async function generate(env: CloudflareEnv, orderId: string, draft: Draft, fallbackTitle: string, kind: GenerationKind, opts: Options = {}) {
   const db = await getDb();
-  const song = await db.prepare("SELECT status FROM songs WHERE order_id = ?").bind(orderId).first<{ status: string }>();
-  if (song?.status === "ready") await mailSongReady(env, orderId, kind !== "first");
-  else if (song?.status === "failed") await mailSongFailed(env, orderId);
+  // 이미 들을 수 있던 노래가 있었는지. 수정·재제작이 실패해도 그 노래는 그대로 둔다.
+  const before = await db.prepare("SELECT audio_key FROM songs WHERE order_id = ?").bind(orderId).first<{ audio_key: string | null }>();
+  const result = await produce(env, orderId, draft, fallbackTitle, kind, opts.suffix ?? "", opts.note ?? "", Boolean(before?.audio_key));
+  if (result !== "ready" && opts.revisionId) {
+    await db.prepare("UPDATE revisions SET status = 'failed' WHERE id = ?").bind(opts.revisionId).run();
+  }
+  // 결과를 주문자(완성)나 주문자·운영자(실패)에게 메일로 알린다. 메일이 꺼져 있으면 아무것도 하지 않는다.
+  // 고객이 요청한 수정, 또는 이미 완성됐던 노래를 관리자가 다시 만든 경우만 "수정한 노래" 메일로 보낸다.
+  if (result === "ready") await mailSongReady(env, orderId, kind === "revision" || (kind === "admin" && Boolean(before?.audio_key)));
+  else if (result === "restored") await mailRevisionFailed(env, orderId);
+  else await mailSongFailed(env, orderId);
 }
 
-async function produce(env: CloudflareEnv, orderId: string, draft: Draft, fallbackTitle: string, kind: GenerationKind, suffix: string, note: string) {
+/** 노래를 만든다. 실패했을 때 이전 노래가 있으면 그대로 들을 수 있게 되돌린다(restored). */
+async function produce(
+  env: CloudflareEnv,
+  orderId: string,
+  draft: Draft,
+  fallbackTitle: string,
+  kind: GenerationKind,
+  suffix: string,
+  note: string,
+  hadAudio: boolean,
+): Promise<"ready" | "failed" | "restored"> {
+  const fail = async (error: string) => {
+    await finish(orderId, { status: hadAudio ? "ready" : "failed", error: error.slice(0, 500) });
+    return hadAudio ? ("restored" as const) : ("failed" as const);
+  };
   try {
     const db = await getDb();
     await db.prepare("INSERT INTO generations (order_id, kind, created_at) VALUES (?, ?, ?)").bind(orderId, kind, new Date().toISOString()).run();
@@ -131,10 +154,10 @@ async function produce(env: CloudflareEnv, orderId: string, draft: Draft, fallba
     });
     if (!res.ok) {
       // 자동 재시도는 중복 과금 위험이 있어 하지 않는다. 운영자가 error를 보고 판단한다.
-      return await finish(orderId, { status: "failed", error: `${res.status} ${(await res.text()).slice(0, 500)}` });
+      return await fail(`${res.status} ${(await res.text()).slice(0, 500)}`);
     }
     const { json, audio } = splitMultipart(new Uint8Array(await res.arrayBuffer()), res.headers.get("content-type") ?? "");
-    if (!audio?.length) return await finish(orderId, { status: "failed", error: "no audio in response" });
+    if (!audio?.length) return await fail("no audio in response");
 
     const meta = (json ?? {}) as { composition_plan?: { chunks?: { text?: string }[] }; song_metadata?: { title?: string } };
     const title = meta.song_metadata?.title?.trim() || fallbackTitle;
@@ -149,8 +172,9 @@ async function produce(env: CloudflareEnv, orderId: string, draft: Draft, fallba
       provider_song_id: res.headers.get("song-id"),
       error: null,
     });
+    return "ready";
   } catch (e) {
-    await finish(orderId, { status: "failed", error: String(e).slice(0, 500) }).catch(() => {});
+    return fail(String(e)).catch(() => (hadAudio ? "restored" : "failed"));
   }
 }
 
@@ -171,8 +195,12 @@ export async function startSong(orderId: string, draft: Draft, fallbackTitle: st
   ctx.waitUntil(generate(env, orderId, draft, fallbackTitle, "first"));
 }
 
+// 이 시간 안에 끝나지 않은 생성은 중단된 것으로 본다(src/lib/db.ts의 STALE_MS와 같은 값).
+const STALE_MS = 10 * 60 * 1000;
+
 /**
  * 완성된(또는 실패한) 노래를 수정 요청대로 다시 만든다. 같은 순간에 두 번 시작되지 않도록 상태로 잠근다.
+ * 만드는 중(generating)으로 10분 넘게 멈춰 있는 노래도 다시 시작할 수 있다(작업이 중간에 끊긴 경우).
  * 시작했으면 true. 생성이 꺼져 있거나 이미 만드는 중이면 false.
  */
 export async function reviseSong(
@@ -182,16 +210,22 @@ export async function reviseSong(
   suffix: string,
   req: RevisionRequest,
   kind: GenerationKind = "revision",
+  revisionId?: string,
 ): Promise<boolean> {
   const { env, ctx } = await getCloudflareContext({ async: true });
   if ((env.MUSIC_GENERATION as string) !== "on" || !env.ELEVENLABS_API_KEY) return false;
   const db = await getDb();
   const claimed = await db
-    .prepare("UPDATE songs SET status = 'generating', started_at = ?, finished_at = NULL, error = NULL WHERE order_id = ? AND status IN ('ready', 'failed')")
-    .bind(new Date().toISOString(), orderId)
+    .prepare(
+      `UPDATE songs SET status = 'generating', started_at = ?, finished_at = NULL, error = NULL
+       WHERE order_id = ? AND (status IN ('ready', 'failed') OR (status = 'generating' AND started_at < ?))`,
+    )
+    .bind(new Date().toISOString(), orderId, new Date(Date.now() - STALE_MS).toISOString())
     .run();
   if (!claimed.meta.changes) return false;
+  // 생성이 끝나기 전에 시작으로 기록해 둔다(실패하면 generate가 failed로 바꾼다).
+  if (revisionId) await db.prepare("UPDATE revisions SET status = 'started' WHERE id = ?").bind(revisionId).run();
   const revised = { ...draft, genre: req.genre || draft.genre, vocal: req.vocal || draft.vocal };
-  ctx.waitUntil(generate(env, orderId, revised, fallbackTitle, kind, suffix, req.note ?? ""));
+  ctx.waitUntil(generate(env, orderId, revised, fallbackTitle, kind, { suffix, note: req.note ?? "", revisionId }));
   return true;
 }

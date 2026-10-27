@@ -8,7 +8,8 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
   const { id } = await params;
   const row = await getOwnedOrder(id, req.headers.get("x-owner-token"));
   const song = row ? await getSong(row.id) : null;
-  if (!song || song.status !== "ready" || !song.audio_key) return NextResponse.json({ error: "not_found" }, { status: 404 });
+  // 수정본을 만드는 중이거나 수정이 실패해도 이전 노래는 계속 들을 수 있다.
+  if (!song?.audio_key) return NextResponse.json({ error: "not_found" }, { status: 404 });
   if ((await songLock(song.order_id)).locked) return NextResponse.json({ error: "locked" }, { status: 403 });
   return serveAudio(req, song.audio_key);
 }

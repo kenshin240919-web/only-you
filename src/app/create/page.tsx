@@ -388,6 +388,8 @@ export default function CreatePage() {
               <SummaryRow k="어떤 사람" v={d.traits} onEdit={() => setStep(5)} />
               <SummaryRow k="추억" v={d.memory} onEdit={() => setStep(6)} />
               <SummaryRow k="전하는 말" v={d.message || "없음"} onEdit={() => setStep(7)} />
+              <SummaryRow k="빼고 싶은 내용" v={d.exclude || "없음"} onEdit={() => setStep(7)} />
+              {d.pronunciation.trim() && <SummaryRow k="발음 메모" v={d.pronunciation} onEdit={() => setStep(2)} />}
             </ul>
 
             <label className="field">

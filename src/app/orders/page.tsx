@@ -35,7 +35,8 @@ export default function OrdersPage() {
           if (stopped) return;
           setPayment(data.payment);
           setSong(data.song.status);
-          if (data.payment === "cancelled" || (data.payment === "paid" && data.song.status !== "generating")) return;
+          // 결제 직후에는 노래 기록이 생기기 전(none)일 수 있어서, 그때도 계속 확인한다.
+          if (data.payment === "cancelled" || (data.payment === "paid" && data.song.status !== "generating" && data.song.status !== "none")) return;
         }
       } catch {}
       if (!stopped) timer = setTimeout(poll, POLL_MS);
@@ -53,7 +54,20 @@ export default function OrdersPage() {
   }
 
   // 결제를 마치지 못했거나 취소된 주문은 이 기기에서 지우고, 같은 이야기로 다시 주문한다.
-  const reorder = () => {
+  // 결제창에서 방금 결제했을 수 있으니 먼저 상태를 다시 확인하고, 아직 대기 중이면 한 번 더 묻는다(두 번 결제 방지).
+  const reorder = async () => {
+    try {
+      const res = await fetch(`/api/orders/${order.orderId}`, { headers: { "x-owner-token": order.ownerToken ?? "" } });
+      if (res.ok) {
+        const data = (await res.json()) as { payment: PaymentStatus };
+        if (data.payment === "paid") return setPayment("paid");
+      }
+    } catch {}
+    if (
+      payment === "ready" &&
+      !window.confirm(`결제창에서 이미 결제하셨다면 잠시 기다려 주세요(주문번호 ${order.orderNo}). 결제하지 않으셨다면 새로 주문할까요?`)
+    )
+      return;
     setOrder({ ...order, paidAt: null, orderNo: null, orderId: null, ownerToken: null, giftToken: null });
     window.location.href = "/checkout";
   };
@@ -113,7 +127,7 @@ export default function OrdersPage() {
         <p className="notice">
           {song === "failed"
             ? "노래를 만드는 중에 문제가 생겼어요. 확인 후 이메일로 안내해 드릴게요."
-            : "노래 제작이 잠시 멈춰 있어요. 운영자가 확인해서 다시 만들어 드릴게요."}
+            : "노래 제작이 잠시 멈춰 있어요. 운영자가 확인해 다시 만들어 드려요. 급하시면 카카오톡 채널로 문의해 주세요."}
         </p>
       )}
 

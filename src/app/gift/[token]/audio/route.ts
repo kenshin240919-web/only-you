@@ -7,7 +7,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ token: s
   const { token } = await params;
   const order = /^[A-Za-z0-9_-]{20,64}$/.test(token) ? await getGiftOrder(token) : null;
   const song = order ? await getSong(order.id) : null;
-  if (!song || song.status !== "ready" || !song.audio_key) return new Response("not found", { status: 404 });
+  if (!song?.audio_key) return new Response("not found", { status: 404 });
   if ((await songLock(song.order_id)).locked) return new Response("locked", { status: 403 });
   return serveAudio(req, song.audio_key);
 }

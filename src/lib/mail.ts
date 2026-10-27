@@ -40,7 +40,7 @@ ${foot ? `<p style="margin:16px 0 0;font-size:13px;line-height:1.6;color:#8a8f9c
 </div></body></html>`;
 }
 
-type OrderInfo = { email: string; order_no: string; gift_token: string; gift_enabled: number; title: string | null; error: string | null; promo: number; promo_at: string | null };
+type OrderInfo = { email: string; order_no: string; gift_token: string; gift_enabled: number; title: string | null; error: string | null; promo: number; promo_at: string | null; paid: number };
 
 async function orderInfo(orderId: string): Promise<OrderInfo | null> {
   const db = await getDb();
@@ -48,7 +48,8 @@ async function orderInfo(orderId: string): Promise<OrderInfo | null> {
     .prepare(
       `SELECT o.email, o.order_no, o.gift_token, o.gift_enabled, s.title, s.error,
          EXISTS (SELECT 1 FROM purchases p WHERE p.order_id = o.id AND p.provider = 'promo') promo,
-         (SELECT created_at FROM promo_claims c WHERE c.order_id = o.id) promo_at
+         (SELECT created_at FROM promo_claims c WHERE c.order_id = o.id) promo_at,
+         (SELECT coalesce(sum(amount), 0) FROM purchases p WHERE p.order_id = o.id AND p.status = 'paid') paid
        FROM orders o LEFT JOIN songs s ON s.order_id = o.id WHERE o.id = ?`,
     )
     .bind(orderId)
@@ -89,7 +90,7 @@ export async function mailSongReady(env: CloudflareEnv, orderId: string, revised
     : "";
   const subject = revised ? `[Only U song] 수정한 노래가 완성됐어요 - ${title}` : `[Only U song] 노래가 완성됐어요 - ${title}`;
   const lines = [
-    revised ? `요청하신 대로 다시 만든 노래 「${esc(title)}」가 완성됐어요.` : `주문하신 노래 「${esc(title)}」가 완성됐어요.`,
+    revised ? `요청하신 대로 다시 만든 노래가 완성됐어요: 「${esc(title)}」` : `주문하신 노래가 완성됐어요: 「${esc(title)}」`,
     `주문번호: <strong>${esc(o.order_no)}</strong>`,
     "주문한 기기에서는 &lsquo;내 노래&rsquo;에서 바로 들을 수 있어요. 다른 기기에서는 아래 버튼을 누른 뒤 주문할 때 쓴 이메일을 입력하면 열려요.",
   ];
@@ -102,14 +103,14 @@ export async function mailSongReady(env: CloudflareEnv, orderId: string, revised
     );
   else if (!revised)
     lines.push(
-      `🎁 노래를 처음 듣는 순간을 영상으로 <a href="${esc(BUSINESS.kakaoChat)}" style="color:#c9573f">카카오톡 채널</a>로 보내 주시면 MP3·가사 카드(올인원은 다음 노래 1곡)를 드려요. <a href="${esc(site)}/review-event" style="color:#c9573f">후기 이벤트 보기</a>`,
+      `🎁 노래를 처음 듣는 순간을 영상으로 <a href="${esc(BUSINESS.kakaoChat)}" style="color:#c9573f">카카오톡 채널</a>(또는 이 메일 답장)로 보내 주시면 MP3·가사 카드(올인원은 다음 노래 1곡 무료 쿠폰)를 드려요. <a href="${esc(site)}/review-event" style="color:#c9573f">후기 이벤트 보기</a>`,
     );
   await send(env, {
     to: o.email,
     subject,
     html: layout(revised ? "수정한 노래가 완성됐어요" : "노래가 완성됐어요", lines, { label: "내 노래 열기", href: findUrl }),
     text: [
-      revised ? `요청하신 대로 다시 만든 노래 「${title}」가 완성됐어요.` : `주문하신 노래 「${title}」가 완성됐어요.`,
+      revised ? `요청하신 대로 다시 만든 노래가 완성됐어요: 「${title}」` : `주문하신 노래가 완성됐어요: 「${title}」`,
       `주문번호: ${o.order_no}`,
       `내 노래 열기: ${findUrl} (주문할 때 쓴 이메일 입력)`,
       o.gift_enabled ? `선물 링크: ${giftUrl}` : "",
@@ -138,12 +139,12 @@ export async function mailSongFailed(env: CloudflareEnv, orderId: string): Promi
       "노래 제작이 늦어지고 있어요",
       [
         `주문번호 <strong>${esc(o.order_no)}</strong>의 노래를 만드는 중에 문제가 생겼어요. 확인 후 추가 결제 없이 다시 만들어 드릴게요.`,
-        "다시 만들지 않고 환불을 원하시면 이 메일에 답장해 주세요. 결제 금액 전액을 환불해 드려요.",
+        ...(o.paid > 0 ? ["다시 만들지 않고 환불을 원하시면 이 메일에 답장해 주세요. 결제 금액 전액을 환불해 드려요."] : []),
       ],
       undefined,
       "불편을 드려 죄송합니다.",
     ),
-    text: `주문번호 ${o.order_no}의 노래를 만드는 중에 문제가 생겼어요. 확인 후 추가 결제 없이 다시 만들어 드릴게요.\n환불을 원하시면 이 메일에 답장해 주세요.\n문의: 카카오톡 채널 ${BUSINESS.kakaoChat} · ${BUSINESS.email} · ${BUSINESS.phone}`,
+    text: `주문번호 ${o.order_no}의 노래를 만드는 중에 문제가 생겼어요. 확인 후 추가 결제 없이 다시 만들어 드릴게요.\n${o.paid > 0 ? "환불을 원하시면 이 메일에 답장해 주세요.\n" : ""}문의: 카카오톡 채널 ${BUSINESS.kakaoChat} · ${BUSINESS.email} · ${BUSINESS.phone}`,
   });
   if (env.ADMIN_EMAIL) {
     await send(env, {
@@ -159,7 +160,13 @@ export async function mailSongFailed(env: CloudflareEnv, orderId: string): Promi
 }
 
 /** 후기 혜택을 지급했을 때 주문자에게 알린다. 쿠폰이면 쿠폰 번호와 쓰는 방법을 함께 보낸다. */
-export async function mailReward(env: CloudflareEnv, orderId: string, benefit: "addons" | "card" | "coupon", couponCode?: string): Promise<void> {
+export async function mailReward(
+  env: CloudflareEnv,
+  orderId: string,
+  benefit: "addons" | "card" | "coupon",
+  couponCode?: string,
+  items: ("mp3" | "card")[] = [],
+): Promise<void> {
   if (!mailEnabled(env)) return;
   const o = await orderInfo(orderId);
   if (!o) return;
@@ -174,12 +181,13 @@ export async function mailReward(env: CloudflareEnv, orderId: string, benefit: "
       thanks,
       `후기 혜택으로 <strong>다음 노래 1곡 무료 쿠폰</strong>을 드려요. (노래 듣기 · 선물 링크 포함, MP3와 가사 카드는 빠져요)`,
       `쿠폰 번호: <strong style="font-size:18px;letter-spacing:1px">${esc(couponCode)}</strong>`,
-      "노래 만들기에서 이야기를 쓰고, 주문 확인 화면의 &lsquo;쿠폰 번호&rsquo; 칸에 입력하면 결제 없이 바로 만들어져요. 쿠폰은 1년 동안 한 번 쓸 수 있어요.",
+      "노래 만들기에서 이야기를 쓰고, 주문 확인 화면 아래 &lsquo;무료 노래 쿠폰이 있으세요?&rsquo;를 눌러 쿠폰 번호를 입력하면 결제 없이 바로 만들어져요. 쿠폰은 1년 동안 한 번 쓸 수 있어요.",
     ];
     button = { label: "새 노래 만들기", href: `${site}/create` };
-    text = `${thanks}\n후기 혜택: 다음 노래 1곡 무료 쿠폰(노래 듣기만)\n쿠폰 번호: ${couponCode}\n노래 만들기(${site}/create) → 주문 확인의 쿠폰 번호 칸에 입력하세요. 1년 동안 한 번 쓸 수 있어요.`;
+    text = `${thanks}\n후기 혜택: 다음 노래 1곡 무료 쿠폰(노래 듣기만)\n쿠폰 번호: ${couponCode}\n노래 만들기(${site}/create) → 주문 확인 화면 아래 '무료 노래 쿠폰이 있으세요?'를 눌러 입력하세요. 1년 동안 한 번 쓸 수 있어요.`;
   } else {
-    const what = benefit === "addons" ? "MP3 다운로드와 가사 카드" : "가사 카드";
+    // 실제로 연 상품만 적는다(이미 가진 상품은 빠진다).
+    const what = items.map((i) => (i === "mp3" ? "MP3 다운로드" : "가사 카드")).join("와 ") || "가사 카드";
     lines = [thanks, `후기 혜택으로 <strong>${what}</strong>를 열어 드렸어요. &lsquo;내 노래&rsquo;에서 바로 받을 수 있어요.`, `주문번호: <strong>${esc(o.order_no)}</strong>`];
     button = { label: "내 노래 열기", href: findUrl };
     text = `${thanks}\n후기 혜택으로 ${what}를 열어 드렸어요. 내 노래: ${findUrl} (주문할 때 쓴 이메일 입력)\n주문번호: ${o.order_no}`;
@@ -207,4 +215,37 @@ export async function mailAdminPromo(env: CloudflareEnv, orderNo: string, used: 
     ),
     text: `오픈 기념 무료 주문 ${used}/${limit}\n주문번호 ${orderNo}\n${full ? "자동 마감됐어요." : `남은 자리 ${limit - used}개`}\n${site}/admin`,
   });
+}
+
+/** 수정본(또는 관리자 재제작)을 만들지 못했을 때. 이전 노래는 그대로 들을 수 있다. 운영자에게는 오류를 알린다. */
+export async function mailRevisionFailed(env: CloudflareEnv, orderId: string): Promise<void> {
+  if (!mailEnabled(env)) return;
+  const o = await orderInfo(orderId);
+  if (!o) return;
+  const site = env.SITE_URL.replace(/\/$/, "");
+  await send(env, {
+    to: o.email,
+    subject: "[Only U song] 수정한 노래를 만들지 못했어요",
+    html: layout(
+      "수정한 노래를 만들지 못했어요",
+      [
+        `주문번호 <strong>${esc(o.order_no)}</strong>의 수정본을 만드는 중에 문제가 생겼어요. 이전 노래는 그대로 들을 수 있어요.`,
+        "이번 수정은 횟수에 넣지 않았어요. 확인 후 추가 결제 없이 다시 만들어 드릴게요.",
+      ],
+      undefined,
+      "불편을 드려 죄송합니다.",
+    ),
+    text: `주문번호 ${o.order_no}의 수정본을 만들지 못했어요. 이전 노래는 그대로 들을 수 있고, 이번 수정은 횟수에 넣지 않았어요. 확인 후 다시 만들어 드릴게요.\n문의: 카카오톡 채널 ${BUSINESS.kakaoChat} · ${BUSINESS.email}`,
+  });
+  if (env.ADMIN_EMAIL) {
+    await send(env, {
+      to: env.ADMIN_EMAIL,
+      subject: `[관리자] 수정 실패 ${o.order_no}`,
+      html: layout(`수정 실패 ${o.order_no}`, [`오류: ${esc(o.error ?? "알 수 없음")}`, "이전 노래는 그대로예요. 관리자 화면에서 요청 내용대로 &lsquo;무료로 다시 만들기&rsquo;를 해 주세요."], {
+        label: "관리자 화면 열기",
+        href: `${site}/admin`,
+      }),
+      text: `수정 실패 ${o.order_no}\n오류: ${o.error ?? "알 수 없음"}\n${site}/admin`,
+    });
+  }
 }

@@ -236,8 +236,8 @@ export default function CheckoutPage() {
       <label className="checkbox" style={{ marginTop: 20 }}>
         <input type="checkbox" checked={agree} onChange={(e) => setAgree(e.target.checked)} />
         <span>
-          <strong>(필수)</strong> 맞춤 제작 상품이라 제작이 시작된 뒤에는 단순 변심 환불이 어렵다는 점과, 노래가 AI로
-          만들어진다는 점을 확인했습니다. (<Link href="/refund">환불 정책</Link>)
+          <strong>(필수)</strong> 맞춤 제작 디지털 콘텐츠라 노래가 완성되어 제공된 뒤에는 단순 변심에 의한 환불(청약철회)이 제한된다는 점과,
+          노래가 AI로 만들어진다는 점을 확인했습니다. (<Link href="/refund">환불 정책</Link>)
         </span>
       </label>
 
@@ -248,8 +248,9 @@ export default function CheckoutPage() {
             <strong>🎉 오픈 기념 무료로 받기</strong>
             <br />
             <small className="muted">
-              선착순 {promoInfo.limit}명 · 남은 자리 {promoInfo.left}개 · 노래(무제한 듣기 · 선물 링크 · 수정 1회)를 0원으로. 받는 분이 처음 듣는
-              순간을 영상으로 보내 주시면 MP3와 가사 카드도 무료로 열어 드려요.
+              선착순 {promoInfo.limit}명 · {promoInfo.left}자리 남음 · 노래(무제한 듣기 · 선물 링크 · 수정 1회)를 0원으로. 받는 분이 처음 듣는
+              순간을 신청 후 7일 안에 카카오톡 채널 &ldquo;Only U song 온리유송&rdquo; 또는 이메일로 보내 주시면 MP3와 가사 카드도 무료로 열어 드려요.
+              MP3·가사 카드나 올인원을 바로 원하시면 체크를 해제해 주세요.
             </small>
           </span>
         </label>
@@ -265,6 +266,7 @@ export default function CheckoutPage() {
       )}
       {promoMsg && <p className="field-error">{promoMsg}</p>}
 
+      {promo && <small className="muted">무료 노래 쿠폰을 쓰시려면 위 &lsquo;오픈 기념 무료로 받기&rsquo;를 해제해 주세요.</small>}
       <details className="coupon-box" style={{ marginTop: 16 }} hidden={promo}>
         <summary>무료 노래 쿠폰이 있으세요?</summary>
         <div className="coupon-row">
@@ -296,7 +298,7 @@ export default function CheckoutPage() {
         <div className="notice">지금은 결제를 받을 수 없어요. 잠시 후 다시 시도해 주세요.</div>
       )}
       {provider === "mock" && !free && (
-        <div className="notice">시제품이라 실제 결제는 이루어지지 않습니다. 버튼을 누르면 결제가 완료된 것처럼 진행돼요.</div>
+        <div className="notice">시험 모드라 실제 결제는 이루어지지 않습니다. 버튼을 누르면 결제가 완료된 것처럼 진행돼요.</div>
       )}
 
       {error && (

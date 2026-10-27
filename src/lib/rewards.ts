@@ -8,7 +8,7 @@ import { isAllInOne } from "./pricing";
 // - 글·사진 후기: 가사 카드
 export type RewardKind = "video" | "text";
 export type RewardResult =
-  | { ok: true; benefit: "addons" | "card" | "coupon"; couponCode?: string }
+  | { ok: true; benefit: "addons" | "card" | "coupon"; couponCode?: string; items?: ("mp3" | "card")[] }
   | { ok: false; reason: "already" | "not_paid" | "nothing" };
 
 export const COUPON_DAYS = 365;
@@ -37,10 +37,15 @@ export async function grantReward(orderId: string, kind: RewardKind): Promise<Re
   const { payment, owned, bought } = ownership(await getPurchases(orderId));
   if (payment !== "paid") return { ok: false, reason: "not_paid" };
 
+  // 줄 상품을 먼저 정한다. 이미 가진 상품은 빼고, 반응 영상인데 더 줄 MP3·가사 카드가 없으면 다음 노래 쿠폰으로 바꾼다.
   let benefit: "addons" | "card" | "coupon";
   if (kind === "video") benefit = isAllInOne(bought) ? "coupon" : "addons";
   else benefit = "card";
-  if (benefit === "card" && owned.includes("card")) return { ok: false, reason: "nothing" };
+  const items = benefit === "coupon" ? [] : (benefit === "addons" ? (["mp3", "card"] as const) : (["card"] as const)).filter((i) => !owned.includes(i));
+  if (benefit !== "coupon" && items.length === 0) {
+    if (kind === "text") return { ok: false, reason: "nothing" };
+    benefit = "coupon";
+  }
 
   const now = new Date().toISOString();
   const code = benefit === "coupon" ? couponCode() : null;
@@ -59,10 +64,8 @@ export async function grantReward(orderId: string, kind: RewardKind): Promise<Re
       .run();
     return { ok: true, benefit, couponCode: code! };
   }
-  // 이미 가진 상품은 빼고 준다(예: MP3만 샀던 주문은 가사 카드만).
-  const items = (benefit === "addons" ? (["mp3", "card"] as const) : (["card"] as const)).filter((i) => !owned.includes(i));
-  if (items.length) await createFreePurchase(orderId, [...items], "reward");
-  return { ok: true, benefit };
+  await createFreePurchase(orderId, [...items], "reward");
+  return { ok: true, benefit, items: [...items] };
 }
 
 export type CouponCheck = { valid: true } | { valid: false; reason: "not_found" | "used" | "expired" };
