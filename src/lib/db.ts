@@ -135,7 +135,10 @@ const PURCHASES_SCHEMA = [
 ];
 
 // 생성 요청이 이 시간 안에 끝나지 않으면 작업이 중단된 것으로 본다.
-const STALE_MS = 10 * 60 * 1000;
+export const STALE_MS = 10 * 60 * 1000;
+
+/** 이 시각보다 먼저 시작해 아직 generating인 노래는 멈춘 것으로 본다(관리자 목록·통계용). */
+export const staleBefore = () => new Date(Date.now() - STALE_MS).toISOString();
 
 let schemaReady: Promise<unknown> | null = null;
 
@@ -214,7 +217,7 @@ export const purchaseItems = (p: PurchaseRow) => JSON.parse(p.items) as Item[];
 
 /**
  * 처음 주문(노래)의 결제 상태와 결제가 끝난 상품 목록. 결제 기록이 없는 시제품 주문은 모두 가진 것으로 본다.
- * bought는 후기 혜택(reward)과 오픈 기념 무료(promo)로 받은 상품을 뺀 목록이다.
+ * bought는 후기 혜택(reward) · 오픈 기념 무료(promo) · 무료 쿠폰(coupon)으로 받은 상품을 뺀 목록이다.
  * 올인원 혜택(수정 3회 무료 · 후기 쿠폰)은 bought로 판단한다. 그래서 무료로 받은 주문은 수정 1회다.
  */
 export function ownership(purchases: PurchaseRow[]): { payment: PaymentStatus; owned: Item[]; bought: Item[] } {
@@ -227,7 +230,7 @@ export function ownership(purchases: PurchaseRow[]): { payment: PaymentStatus; o
     for (const i of purchaseItems(p)) {
       if (i === "revision") continue;
       owned.add(i);
-      if (p.provider !== "reward" && p.provider !== "promo") bought.add(i);
+      if (p.provider !== "reward" && p.provider !== "promo" && p.provider !== "coupon") bought.add(i);
     }
   }
   return { payment: first?.status ?? "paid", owned: [...owned], bought: [...bought] };
@@ -262,7 +265,8 @@ export async function getGift(giftToken: string): Promise<GiftView | null> {
   const row = await getGiftOrder(giftToken);
   if (!row) return null;
   const draft = JSON.parse(row.draft_json) as Draft;
-  const song = songView(await getSong(row.id));
+  const songRow = await getSong(row.id);
+  const song = songView(songRow);
   // 노래가 완성되면 실제로 부른 가사를 보여 준다.
   const lyrics = song.lyrics ?? (JSON.parse(row.lyrics_json) as Lyrics);
   return {
@@ -271,6 +275,7 @@ export async function getGift(giftToken: string): Promise<GiftView | null> {
     callName: callName(draft),
     genre: genreLabel(draft),
     message: draft.message.trim(),
-    hasAudio: song.status === "ready",
+    // 수정본을 만드는 중이어도 이전 노래는 들을 수 있다.
+    hasAudio: Boolean(songRow?.audio_key),
   };
 }

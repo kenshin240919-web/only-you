@@ -30,7 +30,7 @@ type ServerOrder = {
   /** 오픈 기념 무료 주문. */
   promo: boolean;
   /** 듣기 정지 여부와 오픈 기념 무료의 영상 마감 시각. */
-  lock: { locked: boolean; reason: "expired" | "admin" | null; deadline: string | null };
+  lock: { locked: boolean; reason: "expired" | "admin" | "cancelled" | null; deadline: string | null };
   pendingPurchase: boolean;
   revisions: { used: number; max: number; freeLeft: number };
   song: { status: SongStatus; title: string | null; lyrics: Lyrics | null; version: string | null };

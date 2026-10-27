@@ -20,6 +20,8 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   const wanted = Array.isArray(body?.items) ? (body.items as unknown[]) : [];
   const lock = await songLock(id, purchases);
   if (wanted.includes("song") && lock.reason !== "expired") return NextResponse.json({ error: "invalid" }, { status: 400 });
+  // 정지된 노래는 다시 여는 결제(song)만 받는다.
+  if (lock.locked && !wanted.includes("song")) return NextResponse.json({ error: "locked" }, { status: 403 });
   const items = (["song", "mp3", "card"] as const).filter((i) => wanted.includes(i) && (i === "song" || !owned.includes(i)));
   if (!items.length) return NextResponse.json({ error: "invalid" }, { status: 400 });
 

@@ -48,6 +48,8 @@ export async function PATCH(req: Request, { params }: Ctx) {
   if (!row) return notFound();
   const body = (await req.json().catch(() => null)) as { giftEnabled?: unknown } | null;
   if (typeof body?.giftEnabled !== "boolean") return NextResponse.json({ error: "invalid" }, { status: 400 });
+  // 결제가 취소된 주문은 선물 링크를 다시 켤 수 없다.
+  if (body.giftEnabled && ownership(await getPurchases(id)).payment !== "paid") return NextResponse.json({ error: "not_paid" }, { status: 409 });
   const db = await getDb();
   await db.prepare("UPDATE orders SET gift_enabled = ? WHERE id = ?").bind(body.giftEnabled ? 1 : 0, id).run();
   return NextResponse.json({ giftEnabled: body.giftEnabled });

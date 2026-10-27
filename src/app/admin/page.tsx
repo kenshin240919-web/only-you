@@ -51,7 +51,7 @@ type Detail = {
   payment: string;
   owned: Item[];
   bought: Item[];
-  lock: { locked: boolean; reason: "expired" | "admin" | null; deadline: string | null };
+  lock: { locked: boolean; reason: "expired" | "admin" | "cancelled" | null; deadline: string | null };
   rewards: { kind: "video" | "text"; benefit: string; couponCode: string | null; createdAt: string }[];
   purchases: { id: string; items: Item[]; amount: number; provider: string; status: string; providerRef: string | null; createdAt: string; paidAt: string | null }[];
   revisions: { id: string; paid: boolean; status: string; request: { genre?: string; vocal?: string; note?: string }; createdAt: string }[];
@@ -420,7 +420,9 @@ export default function AdminPage() {
                 {detail.lock.locked
                   ? detail.lock.reason === "expired"
                     ? "정지됨 (오픈 기념 무료 영상 기한 지남)"
-                    : "정지됨 (관리자)"
+                    : detail.lock.reason === "cancelled"
+                      ? "정지됨 (결제 취소)"
+                      : "정지됨 (관리자)"
                   : detail.lock.deadline
                     ? `열림 · 영상 마감 ${kst(detail.lock.deadline)}`
                     : "열림"}{" "}
@@ -444,7 +446,7 @@ export default function AdminPage() {
                   {detail.revisions.map((r) => (
                     <li key={r.id}>
                       {kst(r.createdAt)} · {r.paid ? "유료" : "무료"} 수정 ·{" "}
-                      {r.status === "started" ? "진행" : r.status === "awaiting_payment" ? "결제 대기" : "취소"} ·{" "}
+                      {r.status === "started" ? "진행" : r.status === "awaiting_payment" ? "결제 대기" : r.status === "failed" ? "실패(횟수 제외)" : "취소"} ·{" "}
                       {[r.request.genre && labelOf(GENRES, r.request.genre), r.request.vocal && labelOf(VOCALS, r.request.vocal), r.request.note]
                         .filter(Boolean)
                         .join(" / ")}

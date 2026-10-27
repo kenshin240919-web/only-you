@@ -6,6 +6,7 @@ import type { Draft, Lyrics } from "@/lib/draft";
 import { GENRES, VOCALS } from "@/lib/options";
 import { payappEnabled } from "@/lib/payapp";
 import { parsePhone } from "@/lib/phone";
+import { songLock } from "@/lib/lock";
 import { MAX_REVISIONS, freeRevisions } from "@/lib/pricing";
 
 // 노래 수정 요청. 무료 횟수(기본 1회, 올인원 3회) 안에서는 바로 다시 만들고, 그 뒤는 1,900원씩 결제가 확인되면 다시 만든다.
@@ -21,8 +22,10 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   const note = typeof body?.note === "string" ? body.note.trim().slice(0, 300) : "";
   if (!genre && !vocal && !note) return NextResponse.json({ error: "invalid" }, { status: 400 });
 
-  const { payment, bought } = ownership(await getPurchases(id));
+  const purchases = await getPurchases(id);
+  const { payment, bought } = ownership(purchases);
   if (payment !== "paid") return NextResponse.json({ error: "not_paid" }, { status: 409 });
+  if ((await songLock(id, purchases)).locked) return NextResponse.json({ error: "locked" }, { status: 403 });
   const song = await getSong(id);
   if (song?.status !== "ready") return NextResponse.json({ error: "song_not_ready" }, { status: 409 });
   const revisions = await getRevisions(id);

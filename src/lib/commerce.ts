@@ -2,6 +2,7 @@ import "server-only";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { type OrderRow, getDb, randomToken } from "./db";
 import type { Draft, Lyrics } from "./draft";
+import { mailRevisionFailed } from "./mail";
 import { type RevisionRequest, reviseSong, startSong } from "./music";
 import { paymentProvider, requestPayment } from "./payapp";
 import { type Item, goodName, priceOf } from "./pricing";
@@ -81,9 +82,16 @@ export async function applyPaid(purchaseId: string): Promise<void> {
 /** 수정 요청을 시작 상태로 바꾸고 노래를 다시 만든다. 버전 번호는 시작된 수정 수로 정한다. */
 export async function startRevision(orderId: string, revisionId: string, draft: Draft, title: string): Promise<void> {
   const db = await getDb();
-  const rev = await db.prepare("SELECT request_json FROM revisions WHERE id = ?").bind(revisionId).first<{ request_json: string }>();
+  const rev = await db.prepare("SELECT request_json, paid FROM revisions WHERE id = ?").bind(revisionId).first<{ request_json: string; paid: number }>();
   if (!rev) return;
-  await db.prepare("UPDATE revisions SET status = 'started' WHERE id = ?").bind(revisionId).run();
   const n = await db.prepare("SELECT count(*) AS n FROM revisions WHERE order_id = ? AND status = 'started'").bind(orderId).first<{ n: number }>();
-  await reviseSong(orderId, draft, title, `r${n?.n ?? 1}`, JSON.parse(rev.request_json) as RevisionRequest);
+  // 노래를 먼저 잡은 뒤에만 수정을 시작으로 센다. 이미 만드는 중이거나(두 번 누름 · 늦게 끝난 결제) 생성이 꺼져 있으면 횟수에 넣지 않는다.
+  const started = await reviseSong(orderId, draft, title, `r${(n?.n ?? 0) + 1}`, JSON.parse(rev.request_json) as RevisionRequest, "revision", revisionId);
+  if (started) return;
+  await db.prepare("UPDATE revisions SET status = 'failed' WHERE id = ?").bind(revisionId).run();
+  // 돈을 낸 수정을 시작하지 못했으면 주문자·운영자에게 알려 운영자가 다시 만들어 준다.
+  if (rev.paid) {
+    const { env } = await getCloudflareContext({ async: true });
+    await mailRevisionFailed(env, orderId);
+  }
 }

@@ -1,5 +1,5 @@
 import { forbidden, isAdmin } from "@/lib/admin";
-import { getDb } from "@/lib/db";
+import { getDb, staleBefore } from "@/lib/db";
 import type { Draft } from "@/lib/draft";
 import { callName } from "@/lib/draft";
 
@@ -30,10 +30,15 @@ export async function GET(req: Request) {
     where.push("(o.order_no LIKE ? OR o.email LIKE ?)");
     args.push(`%${q}%`, `%${q}%`);
   }
-  if (failedOnly) where.push("s.status = 'failed'");
+  // 10분 넘게 만드는 중으로 멈춘 노래도 실패로 본다.
+  if (failedOnly) {
+    where.push("(s.status = 'failed' OR (s.status = 'generating' AND s.started_at < ?))");
+    args.push(staleBefore());
+  }
   const { results } = await db
     .prepare(
-      `SELECT o.id, o.order_no, o.email, o.draft_json, o.created_at, s.status song_status, s.title song_title,
+      `SELECT o.id, o.order_no, o.email, o.draft_json, o.created_at,
+        CASE WHEN s.status = 'generating' AND s.started_at < ? THEN 'failed' ELSE s.status END song_status, s.title song_title,
         (SELECT coalesce(sum(amount),0) FROM purchases p WHERE p.order_id = o.id AND p.status = 'paid') paid_total,
         (SELECT count(*) FROM purchases p WHERE p.order_id = o.id AND p.status = 'ready') pending,
         (SELECT count(*) FROM purchases p WHERE p.order_id = o.id AND p.status = 'cancelled') cancelled,
@@ -42,7 +47,7 @@ export async function GET(req: Request) {
        ${where.length ? `WHERE ${where.join(" AND ")}` : ""}
        ORDER BY o.created_at DESC LIMIT 100`,
     )
-    .bind(...args)
+    .bind(staleBefore(), ...args)
     .all<Row>();
   return Response.json(
     results.map((r) => {
