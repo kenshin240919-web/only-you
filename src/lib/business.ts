@@ -11,4 +11,6 @@ export const BUSINESS = {
   kakaoChannel: "https://pf.kakao.com/_XjxlWX",
   // 1:1 채팅 바로 열기(2026-10-27 채팅 켬 확인).
   kakaoChat: "https://pf.kakao.com/_XjxlWX/chat",
+  // 채널 친구 추가 화면으로 바로 연다(친구가 되면 이벤트 소식을 받을 수 있다).
+  kakaoAdd: "https://pf.kakao.com/_XjxlWX/friend",
 };

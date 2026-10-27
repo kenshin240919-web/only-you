@@ -1652,9 +1652,15 @@ button.stat {
 }
 
 /* 하단 카카오톡 문의 버튼 */
+.kakao-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 4px 0 12px;
+}
+
 .kakao-btn {
   display: inline-block;
-  margin: 4px 0 12px;
   padding: 10px 18px;
   border-radius: 999px;
   background: #fee500;
@@ -1672,4 +1678,10 @@ button.stat {
 
 .plan .plan-cta {
   margin-top: auto;
+}
+
+.kakao-add {
+  background: transparent;
+  color: #fee500;
+  border: 1px solid #fee500;
 }
