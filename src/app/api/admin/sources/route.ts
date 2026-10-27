@@ -4,6 +4,14 @@ import { getDb } from "@/lib/db";
 export type SourceRow = { src: string; visits: number; orders: number; paidOrders: number; revenue: number };
 
 // 유입 경로별 방문·주문·결제 완료 주문(노래 결제)·매출. days=0이면 전체 기간. 경로를 모르는 주문은 direct로 센다.
+// 관리자: 방문 기록(visits) 모두 지우기. 시험 방문을 정리할 때 쓴다. 주문의 경로 기록은 그대로 둔다.
+export async function DELETE(req: Request) {
+  if (!(await isAdmin(req))) return forbidden();
+  const db = await getDb();
+  await db.prepare("DELETE FROM visits").run();
+  return Response.json({ ok: true });
+}
+
 export async function GET(req: Request) {
   if (!(await isAdmin(req))) return forbidden();
   const days = Math.max(0, Math.min(365, Number(new URL(req.url).searchParams.get("days")) || 0));

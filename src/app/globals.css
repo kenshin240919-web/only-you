@@ -1663,3 +1663,13 @@ button.stat {
   font-size: 14px;
   text-decoration: none;
 }
+
+/* 가격표 버튼은 카드 맨 아래에 맞춘다 */
+.plan {
+  display: flex;
+  flex-direction: column;
+}
+
+.plan .plan-cta {
+  margin-top: auto;
+}
