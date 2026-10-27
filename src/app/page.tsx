@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Mascot from "@/components/Mascot";
+import PlanLink from "@/components/PlanLink";
 import PromoBanner from "@/components/PromoBanner";
 import SamplePlayer from "@/components/SamplePlayer";
 import { ADDON_PAIR, ALL_IN_ONE_LIST, MAX_REVISIONS, PAID_REVISIONS, PRICES, formatWon } from "@/lib/pricing";
@@ -158,6 +159,9 @@ export default function Home() {
               <li>받는 분을 위한 선물 페이지 링크</li>
               <li>수정 1회 무료</li>
             </ul>
+            <PlanLink plan="song" className="btn-ghost btn-block plan-cta">
+              노래만 만들기
+            </PlanLink>
           </div>
           <div className="card plan plan-best">
             <span className="plan-badge">추천</span>
@@ -172,9 +176,9 @@ export default function Home() {
               <li>선물용 가사 카드 이미지</li>
               <li>수정 {MAX_REVISIONS}회 모두 무료</li>
             </ul>
-            <Link href="/create" className="btn btn-block">
-              노래 만들기 시작
-            </Link>
+            <PlanLink plan="bundle" className="btn btn-block plan-cta">
+              올인원으로 만들기
+            </PlanLink>
           </div>
         </div>
         <div className="card addons-table">

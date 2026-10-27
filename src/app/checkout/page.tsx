@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import EmptyState from "@/components/EmptyState";
 import PhoneField, { isPhone } from "@/components/PhoneField";
 import { closePayWindow, goPay, openPayWindow } from "@/components/payWindow";
 import { currentSource } from "@/components/SourceTracker";
 import { usePaymentProvider } from "@/components/usePaymentProvider";
+import { PLAN_KEY } from "@/components/PlanLink";
 import { usePromo } from "@/components/usePromo";
 import { useOrder } from "@/components/useOrder";
 import { callName, genreLabel, reasonLabel, relationshipLabel, songTitle } from "@/lib/draft";
@@ -25,6 +26,12 @@ export default function CheckoutPage() {
   const provider = usePaymentProvider();
   // 올인원(노래 + MP3 + 가사 카드)을 기본으로 고른다.
   const [addons, setAddons] = useState<("mp3" | "card")[]>(["mp3", "card"]);
+  // 가격표에서 "노래만 만들기"를 눌렀으면 추가 상품 없이 시작한다.
+  useEffect(() => {
+    try {
+      if (localStorage.getItem(PLAN_KEY) === "song") setAddons([]);
+    } catch {}
+  }, []);
   const [agree, setAgree] = useState(false);
   const [paying, setPaying] = useState(false);
   const [error, setError] = useState("");

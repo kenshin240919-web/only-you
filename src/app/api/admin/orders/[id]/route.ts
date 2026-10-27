@@ -108,6 +108,30 @@ export async function POST(req: Request, { params }: Ctx) {
     return Response.json({ ok: true });
   }
 
+  // delete: 시험 주문 정리. 주문과 결제·노래·수정·혜택 기록, 저장된 음원까지 지운다.
+  // 생성 기록(generations)은 ElevenLabs 크레딧 사용량 계산에 쓰므로 남긴다. 확인을 위해 주문번호를 함께 받는다.
+  if (body?.action === "delete") {
+    if (body.orderNo !== data.order.order_no) return Response.json({ error: "confirm", message: "주문번호가 맞지 않아요." }, { status: 400 });
+    const { env } = await getCloudflareContext({ async: true });
+    const files = await env.SONGS.list({ prefix: `songs/${id}` });
+    await Promise.all(files.objects.map((o) => env.SONGS.delete(o.key)));
+    const del = (sql: string) => db.prepare(sql).bind(id);
+    await db.batch([
+      del("DELETE FROM purchases WHERE order_id = ?"),
+      del("DELETE FROM songs WHERE order_id = ?"),
+      del("DELETE FROM revisions WHERE order_id = ?"),
+      del("DELETE FROM rewards WHERE order_id = ?"),
+      del("DELETE FROM coupons WHERE source_order_id = ? AND used_order_id IS NULL"),
+      del("DELETE FROM order_sources WHERE order_id = ?"),
+      del("DELETE FROM order_access WHERE order_id = ?"),
+      del("DELETE FROM promo_claims WHERE order_id = ?"),
+      del("DELETE FROM song_locks WHERE order_id = ?"),
+      del("UPDATE reviews SET order_id = NULL WHERE order_id = ?"),
+      del("DELETE FROM orders WHERE id = ?"),
+    ]);
+    return Response.json({ ok: true, message: "주문을 지웠어요." });
+  }
+
   if (body?.action === "gift" && typeof body.enabled === "boolean") {
     await db.prepare("UPDATE orders SET gift_enabled = ? WHERE id = ?").bind(body.enabled ? 1 : 0, id).run();
     return Response.json({ ok: true });

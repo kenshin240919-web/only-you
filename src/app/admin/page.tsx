@@ -455,6 +455,38 @@ export default function AdminPage() {
             </div>
 
             <div className="card stack">
+              <strong>시험 주문 지우기</strong>
+              <p className="muted" style={{ margin: 0, fontSize: 14 }}>
+                시험으로 만든 주문을 통계와 목록에서 완전히 지워요(결제·노래·음원 포함). 실제 손님 주문은 지우지 마세요. 페이앱 결제는 페이앱에서 먼저
+                취소해 주세요.
+              </p>
+              <button
+                type="button"
+                className="btn-ghost"
+                disabled={busy}
+                onClick={async () => {
+                  const no = window.prompt(`지우려면 주문번호 ${detail.orderNo}를 그대로 입력하세요.`);
+                  if (no !== detail.orderNo) return;
+                  setBusy(true);
+                  const r = await fetch(`/api/admin/orders/${detail.id}`, {
+                    method: "POST",
+                    headers: { "content-type": "application/json" },
+                    body: JSON.stringify({ action: "delete", orderNo: no }),
+                  });
+                  const d = (await r.json().catch(() => ({}))) as { message?: string };
+                  setBusy(false);
+                  setMessage(d.message ?? (r.ok ? "지웠어요." : "지우지 못했어요."));
+                  if (r.ok) {
+                    setDetail(null);
+                    await loadList();
+                  }
+                }}
+              >
+                이 주문 지우기
+              </button>
+            </div>
+
+            <div className="card stack">
               <strong>무료로 다시 만들기</strong>
               <p className="muted" style={{ margin: 0, fontSize: 14 }}>
                 제작 실패나 우리 잘못(이름·호칭 오류, 추억 누락)일 때 쓰세요. 고객의 수정 횟수에 들어가지 않고, ElevenLabs 크레딧 2.5분을 써요.
