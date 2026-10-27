@@ -89,7 +89,7 @@ export async function mailSongReady(env: CloudflareEnv, orderId: string, revised
     : "";
   const subject = revised ? `[Only U song] 수정한 노래가 완성됐어요 - ${title}` : `[Only U song] 노래가 완성됐어요 - ${title}`;
   const lines = [
-    revised ? `요청하신 대로 다시 만든 노래 「${esc(title)}」가 완성됐어요.` : `주문하신 노래 「${esc(title)}」가 완성됐어요.`,
+    revised ? `요청하신 대로 다시 만든 노래가 완성됐어요: 「${esc(title)}」` : `주문하신 노래가 완성됐어요: 「${esc(title)}」`,
     `주문번호: <strong>${esc(o.order_no)}</strong>`,
     "주문한 기기에서는 &lsquo;내 노래&rsquo;에서 바로 들을 수 있어요. 다른 기기에서는 아래 버튼을 누른 뒤 주문할 때 쓴 이메일을 입력하면 열려요.",
   ];
@@ -102,14 +102,14 @@ export async function mailSongReady(env: CloudflareEnv, orderId: string, revised
     );
   else if (!revised)
     lines.push(
-      `🎁 노래를 처음 듣는 순간을 영상으로 <a href="${esc(BUSINESS.kakaoChat)}" style="color:#c9573f">카카오톡 채널</a>로 보내 주시면 MP3·가사 카드(올인원은 다음 노래 1곡)를 드려요. <a href="${esc(site)}/review-event" style="color:#c9573f">후기 이벤트 보기</a>`,
+      `🎁 노래를 처음 듣는 순간을 영상으로 <a href="${esc(BUSINESS.kakaoChat)}" style="color:#c9573f">카카오톡 채널</a>(또는 이 메일 답장)로 보내 주시면 MP3·가사 카드(올인원은 다음 노래 1곡 무료 쿠폰)를 드려요. <a href="${esc(site)}/review-event" style="color:#c9573f">후기 이벤트 보기</a>`,
     );
   await send(env, {
     to: o.email,
     subject,
     html: layout(revised ? "수정한 노래가 완성됐어요" : "노래가 완성됐어요", lines, { label: "내 노래 열기", href: findUrl }),
     text: [
-      revised ? `요청하신 대로 다시 만든 노래 「${title}」가 완성됐어요.` : `주문하신 노래 「${title}」가 완성됐어요.`,
+      revised ? `요청하신 대로 다시 만든 노래가 완성됐어요: 「${title}」` : `주문하신 노래가 완성됐어요: 「${title}」`,
       `주문번호: ${o.order_no}`,
       `내 노래 열기: ${findUrl} (주문할 때 쓴 이메일 입력)`,
       o.gift_enabled ? `선물 링크: ${giftUrl}` : "",
@@ -174,10 +174,10 @@ export async function mailReward(env: CloudflareEnv, orderId: string, benefit: "
       thanks,
       `후기 혜택으로 <strong>다음 노래 1곡 무료 쿠폰</strong>을 드려요. (노래 듣기 · 선물 링크 포함, MP3와 가사 카드는 빠져요)`,
       `쿠폰 번호: <strong style="font-size:18px;letter-spacing:1px">${esc(couponCode)}</strong>`,
-      "노래 만들기에서 이야기를 쓰고, 주문 확인 화면의 &lsquo;쿠폰 번호&rsquo; 칸에 입력하면 결제 없이 바로 만들어져요. 쿠폰은 1년 동안 한 번 쓸 수 있어요.",
+      "노래 만들기에서 이야기를 쓰고, 주문 확인 화면 아래 &lsquo;무료 노래 쿠폰이 있으세요?&rsquo;를 눌러 쿠폰 번호를 입력하면 결제 없이 바로 만들어져요. 쿠폰은 1년 동안 한 번 쓸 수 있어요.",
     ];
     button = { label: "새 노래 만들기", href: `${site}/create` };
-    text = `${thanks}\n후기 혜택: 다음 노래 1곡 무료 쿠폰(노래 듣기만)\n쿠폰 번호: ${couponCode}\n노래 만들기(${site}/create) → 주문 확인의 쿠폰 번호 칸에 입력하세요. 1년 동안 한 번 쓸 수 있어요.`;
+    text = `${thanks}\n후기 혜택: 다음 노래 1곡 무료 쿠폰(노래 듣기만)\n쿠폰 번호: ${couponCode}\n노래 만들기(${site}/create) → 주문 확인 화면 아래 '무료 노래 쿠폰이 있으세요?'를 눌러 입력하세요. 1년 동안 한 번 쓸 수 있어요.`;
   } else {
     const what = benefit === "addons" ? "MP3 다운로드와 가사 카드" : "가사 카드";
     lines = [thanks, `후기 혜택으로 <strong>${what}</strong>를 열어 드렸어요. &lsquo;내 노래&rsquo;에서 바로 받을 수 있어요.`, `주문번호: <strong>${esc(o.order_no)}</strong>`];

@@ -138,7 +138,7 @@ export default function SongsPage() {
       ? audioUrl
         ? undefined
         : "음원을 불러오고 있어요"
-      : "노래 제작이 아직 진행되지 않았어요. 확인 후 이메일로 안내해 드릴게요.";
+      : "노래 제작이 잠시 멈춰 있어요. 운영자가 확인해 다시 만들어 드려요. 급하시면 카카오톡 채널로 문의해 주세요.";
   const giftUrl = `${window.location.origin}/gift/${song.giftToken}`;
   const headers = { "content-type": "application/json", "x-owner-token": order.ownerToken ?? "" };
   const revLeft = song.revisions.max - song.revisions.used;
@@ -206,7 +206,7 @@ export default function SongsPage() {
           {song.lock.reason === "expired" ? (
             <>
               <p style={{ margin: 0 }}>
-                오픈 기념 무료 노래의 듣기 기간(신청 후 7일)이 끝났어요. 「{title}」을(를) 계속 들으시려면 노래 값 {formatWon(PRICES.song)}을 결제해
+                반응 영상을 보내 주실 기한(신청 후 7일)이 지나 노래 듣기가 멈췄어요. 이미 영상을 보내셨다면 카카오톡 채널로 알려 주세요. 「{title}」을(를) 계속 들으시려면 노래 값 {formatWon(PRICES.song)}을 결제해
                 주세요. 결제하면 내 노래와 선물 링크가 바로 다시 열려요.
               </p>
               {song.pendingPurchase && <p className="muted" style={{ margin: 0 }}>결제를 확인하고 있어요. 잠시만 기다려 주세요.</p>}
@@ -361,7 +361,7 @@ export default function SongsPage() {
                 onChange={(e) => setRev({ ...rev, note: e.target.value })}
               />
             </label>
-            {!freeRev && needPhone && missing.length === 0 && <PhoneField id="rev-phone" value={phone} onChange={setPhone} />}
+            {!freeRev && needPhone && <PhoneField id="rev-phone" value={phone} onChange={setPhone} />}
             <button
               type="button"
               className="btn btn-block"
@@ -409,7 +409,7 @@ export default function SongsPage() {
             <a href={BUSINESS.kakaoChat} target="_blank" rel="noopener">
               카카오톡 채널
             </a>
-            로 주문번호 {song.orderNo}와 함께 보내 주세요.
+            (또는 {BUSINESS.email})로 주문번호 {song.orderNo}와 함께 보내 주세요.
             {deadline && (
               <>
                 <br />
@@ -423,8 +423,8 @@ export default function SongsPage() {
         <Link href="/review-event" className="card story-event" style={{ marginTop: 16 }}>
           <strong>🎁 처음 듣는 순간을 보내 주세요</strong>
           <span className="muted">
-            받는 분의 반응 영상을 보내 주시면 {isAllInOne(song.bought) ? "다음 노래 1곡을 무료로" : "MP3와 가사 카드를 무료로"} 드려요. 주문번호{" "}
-            {song.orderNo} →
+            받는 분의 반응 영상을 보내 주시면 {isAllInOne(song.bought) ? "다음 노래 1곡 무료 쿠폰(노래 듣기만 · 1년 안 1번)을" : "MP3와 가사 카드를 무료로"}{" "}
+            드려요. 글·사진 후기는 가사 카드를 드려요. 주문번호 {song.orderNo} →
           </span>
         </Link>
       )}
@@ -440,6 +440,7 @@ export default function SongsPage() {
           type="button"
           className="link-btn"
           onClick={() => {
+            if (!window.confirm(`이 기기에서 이 노래가 사라져요. 주문번호 ${song.orderNo}와 주문할 때 쓴 이메일로 '주문 찾기'에서 다시 열 수 있어요. 계속할까요?`)) return;
             clearOrder();
             window.location.href = "/create";
           }}

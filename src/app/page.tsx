@@ -50,7 +50,7 @@ const FAQ = [
   },
   {
     q: "내 이야기는 안전한가요?",
-    a: "사연은 노래 제작에만 쓰고, 노래 페이지는 기본 비공개입니다. 선물 링크는 원할 때 만들고 언제든 끌 수 있어요.",
+    a: "사연은 노래 제작에만 써요. '내 노래' 페이지는 주문한 분만 볼 수 있어요. 선물 링크는 처음부터 켜져 있지만 주소를 받은 사람만 열 수 있고, '내 노래'에서 언제든 끌 수 있어요.",
   },
 ];
 
@@ -91,7 +91,7 @@ export default function Home() {
             </li>
             <li>
               <strong>{formatWon(PRICES.song)}</strong>
-              <span>노래만 먼저 들어 보기</span>
+              <span>노래만 (듣기 · 선물 링크 · 수정 1회)</span>
             </li>
             <li>
               <strong>수정 무료</strong>
@@ -154,7 +154,7 @@ export default function Home() {
             <h3>노래</h3>
             <div className="price">{formatWon(PRICES.song)}</div>
             <ul className="check-list">
-              <li>이름과 추억을 담은 맞춤 노래 1곡 (약 2분 30초 목표)</li>
+              <li>이름과 추억을 담은 맞춤 노래 1곡 (약 2분 30초 길이)</li>
               <li>무제한 듣기와 가사 보기</li>
               <li>받는 분을 위한 선물 페이지 링크</li>
               <li>수정 1회 무료</li>
@@ -192,7 +192,7 @@ export default function Home() {
             <span>{formatWon(PRICES.card)}</span>
           </div>
           <div className="row-between">
-            <span>MP3 + 가사 카드 (노래를 산 뒤 함께, 수정 {MAX_REVISIONS}회 무료로)</span>
+            <span>MP3 + 가사 카드 함께 (노래를 결제한 뒤 함께 사면 올인원과 같아져 수정 {MAX_REVISIONS}회 모두 무료)</span>
             <span>{formatWon(ADDON_PAIR)}</span>
           </div>
           <div className="row-between">
