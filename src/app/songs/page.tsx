@@ -429,6 +429,16 @@ export default function SongsPage() {
         </Link>
       )}
 
+      {ready && (
+        <p className="muted" style={{ marginTop: 16, fontSize: 14, textAlign: "center" }}>
+          새 이벤트 · 할인 소식은{" "}
+          <a href={BUSINESS.kakaoAdd} target="_blank" rel="noopener">
+            카카오톡 채널 &ldquo;Only U song 온리유송&rdquo; 추가
+          </a>
+          로 먼저 받아 보세요.
+        </p>
+      )}
+
       {lyrics.sections.length > 0 && (
         <div style={{ marginTop: 16 }}>
           <LyricsSheet lyrics={{ ...lyrics, title }} />
