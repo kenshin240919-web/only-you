@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { trackStep } from "@/components/trackStep";
 import {
   type Draft,
   type OrderState,
@@ -76,6 +77,8 @@ export default function CreatePage() {
   useEffect(() => {
     headingRef.current?.focus();
     window.scrollTo({ top: 0 });
+    // 1단계를 넘기면 "만들기 시작"으로 센다(페이지만 열어 본 사람은 빼고).
+    if (step >= 2) trackStep("create");
   }, [step]);
 
   const d = order.draft;

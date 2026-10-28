@@ -1,6 +1,7 @@
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { applyPaid } from "@/lib/commerce";
 import { type PurchaseRow, getDb, purchaseItems } from "@/lib/db";
+import { mailAdminPaid } from "@/lib/mail";
 import { CANCEL_STATES, PAID_STATE, verifyFeedback } from "@/lib/payapp";
 import { revokeRewardsStatements } from "@/lib/rewards";
 
@@ -30,7 +31,11 @@ export async function POST(req: Request) {
       .prepare("UPDATE purchases SET status = 'paid', paid_at = ? WHERE id = ? AND status = 'ready'")
       .bind(new Date().toISOString(), purchaseId)
       .run();
-    if (updated.meta.changes) await applyPaid(purchaseId);
+    if (updated.meta.changes) {
+      await applyPaid(purchaseId);
+      // 운영자에게 결제 알림(메일 실패가 결제 처리를 막지 않는다).
+      await mailAdminPaid(env, purchaseId);
+    }
   } else if (CANCEL_STATES.includes(state)) {
     const stmts = [db.prepare("UPDATE purchases SET status = 'cancelled' WHERE id = ?").bind(purchaseId)];
     if (purchaseItems(p).includes("song")) {
