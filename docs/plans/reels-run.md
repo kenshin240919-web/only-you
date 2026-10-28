@@ -10,8 +10,9 @@
 - 필요한 것: Python(Pillow), ffmpeg(사주 릴스와 같음), 글꼴 `C:\Users\User\AppData\Local\Microsoft\Windows\Fonts\Jalnan2TTF.ttf`
 
 ## 1. 영상 만들기 규칙
-- Flow: 동영상 · **9:16 · 8초 · 1개 · 가장 싼 모델 · 360p**(클립 1개 약 6크레딧), 클립 2개 = 16초
-- 합치기: `python tools/reels/make-song-reel.py --subs subs.json --font <잘난체2> --audio public/samples/<곡>.mp3 --audio-start <초> --out final.mp4 clip1.mp4 clip2.mp4`
+- Flow: 동영상 · **9:16 · 8초 · 1개 · 가장 싼 모델 · 360p**(Omni 1.1 Flash, 클립 1개 6크레딧)
+- **길이는 32초 고정: 클립 4개, 자막 4초씩 8장면**(2026-10-28 결정, 16초는 안 만든다). 아래 1편 지시문은 처음 쓴 16초판이라, 클립 2개를 더 기획해(이야기가 이어지게) 32초로 만든다
+- 합치기: `python tools/reels/make-song-reel.py --subs subs.json --font <잘난체2> --audio public/samples/<곡>.mp3 --audio-start <초> --out final.mp4 clip1.mp4 clip2.mp4 clip3.mp4 clip4.mp4`
   - Flow 효과음은 버리고 **우리 샘플 노래**를 깐다(플랫폼 음악 · 사운드는 고르지 않는다)
   - 검은 칸 아래에 "Only U song 온리유송 · 예시 사연 · AI로 만든 노래"가 자동으로 들어간다
 - 영상 · 원고 파일: `reels/out/YYYY-MM-DD_이름/` (git 제외)
@@ -64,4 +65,8 @@ only-you 저장소 폴더에서 git pull 하고 docs/plans/reels-run.md를 읽�
 - 비즈니스 계정 승인 → 프로필에 사이트 링크(`?src=tiktok`)를 넣고, 이후 글은 "프로필 링크에서"로 쓴다.
 
 ## 배운 점
-- (실행하면서 채운다)
+- 2026-10-28 1편(엄마) 32초 업로드. 추가 클립3: 세월이 흘러 생일 케이크 옆에서 자녀가 엄마 손을 잡음 / 클립4: 꽃·선물 옆 휴대폰에서 노래가 나오고 엄마 손이 닿음. --audio-start 44.5 그대로(곡 90초라 32초 들어감)
+- Flow: 프롬프트 칸 왼쪽 아래 "에이전트" 버튼을 누르면 에이전트 모드가 켜진다 — 칸 가운데를 누를 것. 다운로드 아이콘은 메뉴 없이 360p 원본을 바로 받는다(파일 이름은 Flow가 정함 → reels/out으로 복사)
+- 크롬 확장 업로드는 파일당 10MB 한도: final.mp4(32초 약 14MB)를 `ffmpeg -i final.mp4 -c:v libx264 -preset slow -crf 26 -c:a copy -movflags +faststart final_up.mp4`(약 5MB)로 줄여 올린다. 원본이 360p라 화질 차이 없음
+- 작업 중 확장 연결이 끊기면 다시 붙을 때 다른 크롬(사주 irurira1000)에 붙을 수 있다 → 다시 붙으면 인스타 계정부터 확인
+- 틱톡: 업로드 직후 "자동 콘텐츠 검사를 켤까요?"(계정 설정) 창은 취소. "AI 생성 콘텐츠"는 기본 꺼짐 → "펼치기"에서 켬. 게시 직후 '검토 중'일 때는 첫 댓글이 달리지 않는다(입력은 사라지는데 0개) → 검토가 끝난 뒤 다시 단다
