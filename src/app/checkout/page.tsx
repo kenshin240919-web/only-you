@@ -9,6 +9,7 @@ import { closePayWindow, goPay, openPayWindow } from "@/components/payWindow";
 import { currentSource } from "@/components/SourceTracker";
 import { usePaymentProvider } from "@/components/usePaymentProvider";
 import { PLAN_KEY } from "@/components/PlanLink";
+import { trackStep } from "@/components/trackStep";
 import { usePromo } from "@/components/usePromo";
 import { useOrder } from "@/components/useOrder";
 import { callName, genreLabel, reasonLabel, relationshipLabel, songTitle } from "@/lib/draft";
@@ -32,6 +33,10 @@ export default function CheckoutPage() {
       if (localStorage.getItem(PLAN_KEY) === "song") setAddons([]);
     } catch {}
   }, []);
+  // 이야기를 다 쓰고 주문 확인에 온 경우만 센다(관리자 화면 단계별 숫자).
+  useEffect(() => {
+    if (order?.draft.agreeRequired && order.draft.email && !order.orderId) trackStep("checkout");
+  }, [order]);
   const [agree, setAgree] = useState(false);
   const [paying, setPaying] = useState(false);
   const [error, setError] = useState("");

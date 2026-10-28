@@ -249,3 +249,24 @@ export async function mailRevisionFailed(env: CloudflareEnv, orderId: string): P
     });
   }
 }
+
+/** 돈을 낸 결제가 확인될 때마다 운영자에게 알린다(새 주문 · 추가 구매 · 유료 수정 · 다시 듣기 결제). */
+export async function mailAdminPaid(env: CloudflareEnv, purchaseId: string): Promise<void> {
+  if (!mailEnabled(env) || !env.ADMIN_EMAIL) return;
+  const db = await getDb();
+  const p = await db
+    .prepare("SELECT p.amount, p.items, o.order_no FROM purchases p JOIN orders o ON o.id = p.order_id WHERE p.id = ?")
+    .bind(purchaseId)
+    .first<{ amount: number; items: string; order_no: string }>();
+  if (!p) return;
+  const labels: Record<string, string> = { song: "노래", mp3: "MP3", card: "가사 카드", revision: "수정" };
+  const what = (JSON.parse(p.items) as string[]).map((i) => labels[i] ?? i).join(" + ");
+  const won = `${p.amount.toLocaleString("ko-KR")}원`;
+  const site = env.SITE_URL.replace(/\/$/, "");
+  await send(env, {
+    to: env.ADMIN_EMAIL,
+    subject: `[관리자] 결제 ${won} · ${what} · ${p.order_no}`,
+    html: layout(`결제 ${won}`, [`주문번호 <strong>${esc(p.order_no)}</strong>`, `상품: ${esc(what)}`], { label: "관리자 화면 열기", href: `${site}/admin` }),
+    text: `결제 ${won}\n주문번호 ${p.order_no}\n상품: ${what}\n${site}/admin`,
+  });
+}
