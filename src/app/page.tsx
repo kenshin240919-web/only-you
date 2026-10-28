@@ -66,7 +66,7 @@ export default function Home() {
             <br />
             <em>당신만을 위한 노래</em>
           </h1>
-          <p>이름과 추억을 들려주세요. 무대 위 가수가 그 사람만을 위한 노래로 불러 드릴게요.</p>
+          <p>둘만 아는 추억을 들려주세요. 무대 위 가수가 그 추억을 그 사람만을 위한 노래로 불러 드릴게요.</p>
           <Link href="/create" className="btn">
             노래 만들기 시작 →
           </Link>
@@ -154,7 +154,7 @@ export default function Home() {
             <h3>노래</h3>
             <div className="price">{formatWon(PRICES.song)}</div>
             <ul className="check-list">
-              <li>이름과 추억을 담은 맞춤 노래 1곡 (약 2분 30초 길이)</li>
+              <li>둘만 아는 추억을 담은 맞춤 노래 1곡 (약 2분 30초 길이)</li>
               <li>무제한 듣기와 가사 보기</li>
               <li>받는 분을 위한 선물 페이지 링크</li>
               <li>수정 1회 무료</li>
