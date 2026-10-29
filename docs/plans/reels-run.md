@@ -61,6 +61,53 @@ only-you 저장소 폴더에서 git pull 하고 docs/plans/reels-run.md를 읽�
 [4. 보고] 세 링크 + 헤맨 곳. 새로 알게 된 점은 docs/plans/reels-run.md 맨 아래 "배운 점"에 적고 커밋 · 푸시
 ```
 
+## 3. 2편 지시문 (연인 · 「Only You, 지은」 · 빼빼로데이 전)
+아래를 컴퓨터 Claude Code(`claude --chrome`, 온리유송 크롬)에 그대로 붙여 넣는다.
+
+```
+only-you 저장소 폴더에서 git pull 하고 docs/plans/reels-run.md 전체(특히 "배운 점")를 읽은 뒤, 온리유송 릴스 2편을 처음부터 끝까지 진행해 줘.
+각 단계 결과를 캡처로 보여 주고, 막히면 멈추고 알려 줘.
+먼저 연결된 크롬이 "온리유송 크롬"(프로필 OnlyU)인지 확인해 줘: 인스타 계정이 onlyu.song으로 보이는지 캡처. 다른 크롬(특히 irurira1000)이면 아무것도 하지 말고 멈춤.
+
+[하지 말 것]
+- 결제 · 구독 · 크레딧 구매(창이 뜨면 멈춤), 게시물 삭제 · 수정, 계정 설정 변경, 좋아요 · 팔로우, 플랫폼 음악 · 사운드 선택
+
+[1. Flow 영상] 새 프로젝트 "onlyu-02-love" → 동영상 · 9:16 · 8초 · 1개 · 가장 싼 모델 · 360p, 클립 4개(32초)
+- 클립1: A narrow alley in Seongsu-dong, Seoul at night in the rain, wet cobblestones reflecting warm cafe lights, a young couple's hands sharing one clear umbrella as they walk slowly away from the camera, romantic and shy mood. Vertical, cinematic, soft bokeh, slow tracking shot, no text, no visible faces.
+- 클립2: Close-up under a clear umbrella in the rain at night, a young man's hand nervously reaching for a young woman's hand and gently holding it, raindrops on the umbrella glowing with city lights, first-date feeling. Vertical, cinematic, shallow depth of field, slow push-in, no text, no visible faces.
+- 클립3: A cozy small apartment in the evening, a couple's hands on a table next to a box of Pepero sticks and a small gift box with a ribbon, a smartphone lying between them, warm lamp light, anniversary mood. Vertical, cinematic, warm light, gentle camera movement, no text, no visible faces.
+- 클립4: The same table, a young woman's hand picks up the smartphone that is playing music, the screen glowing softly, her other hand covering her heart, a clear umbrella leaning by the window with rain outside, touched and happy mood. Vertical, cinematic, soft warm light, slow push-in, no text, no readable screen text, no visible faces.
+- 다운로드 → reels/out/[오늘날짜]_love/clip1~4.mp4
+
+[2. 합치기] 노래 public/samples/jieun.mp3, --audio-start 30.5 (곡 150초 · 30초쯤부터 소리가 커지는 구간)
+- subs.json (4초씩 8장면):
+  0~4초: 우리 첫 데이트 추억으로 / 노래를 만들어 봤어요
+  4~8초: 비 오던 성수동 골목 / 우산 하나에 둘이
+  8~12초: 처음 잡은 손 / 그 떨림까지 가사가 됐어요
+  12~16초: 둘만 아는 그날이 / 1분 만에 노래로
+  16~20초: 올해 빼빼로데이엔 / 과자 말고
+  20~24초: 우리 이야기로 만든 / 단 한 곡을
+  24~28초: 사연 몇 줄이면 / 그 사람만의 노래 완성
+  28~32초: 빼빼로데이 선물로 / 프로필 링크에서
+- 출력 final.mp4 → 2 · 10 · 18 · 30초 캡처를 보여 주고 "올릴까요?" 물어보기. 10MB 넘으면 "배운 점"대로 final_up.mp4로 줄이기
+  (나는 final.mp4를 직접 들어 보고, 노래가 어색하게 시작하면 --audio-start 값을 바꿔 달라고 할 수 있음)
+
+[3. 업로드] 순서: 유튜브 → 인스타 → 틱톡. 각 플랫폼마다 계정 이름 먼저 확인
+- 유튜브(@onlyusong) Shorts
+  제목: 우리 첫 데이트 추억으로 노래를 만들어 봤어요 💗 #빼빼로데이선물 #shorts
+  설명: 둘만 아는 추억 몇 줄을 적으면 AI가 1분 만에 그 사람만의 노래를 만들어 드려요. 빼빼로데이 · 기념일 선물로 추천해요. (예시 사연 · AI로 만든 노래)\n노래 만들기 👉 https://song.guidejung.com/?src=youtube
+  태그: 빼빼로데이선물, 기념일선물, 커플선물, 노래선물, 맞춤노래, 추억선물, AI노래
+  아동용 아님 · 공개 · "변경되거나 합성된 콘텐츠" 예
+- 인스타(onlyu.song) 릴스, 자르기 "원본", AI 레이블 켬, 음악 추가 안 함
+  캡션: 우리 첫 데이트 추억으로 노래를 만들어 봤어요 💗\n비 오던 성수동 골목, 우산 하나를 같이 쓰던 밤.\n둘만 아는 그날이 1분 만에 노래가 됐어요.\n\n올해 빼빼로데이엔 과자 말고, 우리 이야기로 만든 노래 어때요?\n🎉 오픈 기념 선착순 무료 · 프로필 링크에서\n(예시 사연 · AI로 만든 노래)\n\n#빼빼로데이선물 #기념일선물 #커플선물 #노래선물 #맞춤노래 #추억선물 #AI노래
+  첫 댓글: 둘만 아는 추억, 어떤 장면이 떠오르세요? 💗
+- 틱톡(@only.u.song), AI 생성 콘텐츠 켬(펼치기) · 모두 공개, 사운드 추가 안 함
+  설명: 우리 첫 데이트 추억으로 노래를 만들어 봤어요 💗 노래 만들기는 "온리유송" 검색 · song.guidejung.com #빼빼로데이선물 #커플선물 #노래선물 #맞춤노래 #추억선물
+  첫 댓글(검토가 끝난 뒤): 둘만 아는 추억, 어떤 장면이 떠오르세요? 💗 노래 만들기는 "온리유송" 검색 🎁
+
+[4. 보고] 세 링크 + 헤맨 곳. 새로 알게 된 점은 docs/plans/reels-run.md 맨 아래 "배운 점"에 적고 커밋 · 푸시
+```
+
 ## 틱톡 (승인 후)
 - 비즈니스 계정 승인 → 프로필에 사이트 링크(`?src=tiktok`)를 넣고, 이후 글은 "프로필 링크에서"로 쓴다.
 
