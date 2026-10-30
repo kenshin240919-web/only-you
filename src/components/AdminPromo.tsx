@@ -11,6 +11,7 @@ export default function AdminPromo() {
   const [p, setP] = useState<Promo | null>(null);
   const [limit, setLimit] = useState(5);
   const [busy, setBusy] = useState(false);
+  const [coupon, setCoupon] = useState("");
 
   const load = useCallback(async () => {
     const r = await fetch("/api/admin/promo");
@@ -29,6 +30,14 @@ export default function AdminPromo() {
     await fetch("/api/admin/promo", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ enabled, limit }) });
     setBusy(false);
     await load();
+  };
+
+  const makeCoupon = async () => {
+    if (!window.confirm("무료 노래 쿠폰(노래 듣기만 · 1년)을 하나 만들까요? 쓰면 ElevenLabs 크레딧이 1곡만큼 들어요.")) return;
+    setBusy(true);
+    const r = await fetch("/api/admin/coupons", { method: "POST" });
+    setBusy(false);
+    setCoupon(r.ok ? ((await r.json()) as { code: string }).code : "만들지 못했어요");
   };
 
   if (!p) return null;
@@ -62,6 +71,13 @@ export default function AdminPromo() {
           </button>
         )}
       </div>
+      <div className="row-between" style={{ gap: 8, padding: 0 }}>
+        <small className="muted">시험곡 · 고객 응대용 무료 노래 쿠폰 (결제 화면에서 입력)</small>
+        <button type="button" className="btn-ghost" disabled={busy} onClick={makeCoupon}>
+          쿠폰 만들기
+        </button>
+      </div>
+      {coupon && <strong style={{ userSelect: "all" }}>{coupon}</strong>}
       {p.claims.length > 0 && (
         <small className="muted">
           {p.claims.map((c, i) => (
