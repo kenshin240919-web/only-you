@@ -57,15 +57,27 @@ export async function grantReward(orderId: string, kind: RewardKind): Promise<Re
   if (!claimed.meta.changes) return { ok: false, reason: "already" };
 
   if (benefit === "coupon") {
-    const expires = new Date(Date.now() + COUPON_DAYS * 86400 * 1000).toISOString();
-    await db
-      .prepare("INSERT INTO coupons (code, kind, source_order_id, created_at, expires_at) VALUES (?, 'free_song', ?, ?, ?)")
-      .bind(code, orderId, now, expires)
-      .run();
+    await insertCoupon(code!, orderId, now);
     return { ok: true, benefit, couponCode: code! };
   }
   await createFreePurchase(orderId, [...items], "reward");
   return { ok: true, benefit, items: [...items] };
+}
+
+async function insertCoupon(code: string, sourceOrderId: string | null, now: string) {
+  const db = await getDb();
+  const expires = new Date(Date.now() + COUPON_DAYS * 86400 * 1000).toISOString();
+  await db
+    .prepare("INSERT INTO coupons (code, kind, source_order_id, created_at, expires_at) VALUES (?, 'free_song', ?, ?, ?)")
+    .bind(code, sourceOrderId, now, expires)
+    .run();
+}
+
+/** 관리자가 주문과 관계없이 무료 노래 쿠폰을 만든다(시험곡 · 고객 응대용). */
+export async function issueCoupon(): Promise<string> {
+  const code = couponCode();
+  await insertCoupon(code, null, new Date().toISOString());
+  return code;
 }
 
 export type CouponCheck = { valid: true } | { valid: false; reason: "not_found" | "used" | "expired" };

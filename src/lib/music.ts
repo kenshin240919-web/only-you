@@ -14,6 +14,8 @@ const GENRE_STYLE: Record<string, string> = {
   acoustic: "a warm Korean acoustic pop song with acoustic guitar and soft percussion, medium tempo around 90 bpm",
   pop: "a bright, upbeat Korean pop song with piano, acoustic guitar and handclaps, tempo around 110 bpm",
   trot: "a cheerful, nostalgic Korean trot song with a classic trot rhythm",
+  // 2026-10-30 추가. 재즈 칠합 위 말하듯 부르는 랩. 선물 노래라 비꼬는 말투 대신 장난스럽지만 다정하게.
+  rap: "a playful, witty Korean jazzy chillhop and melodic rap song, mid-tempo around 95 bpm, with warm Rhodes electric piano chords, a punchy boom-bap drum groove with crisp rimshots, a bouncy bassline and light playful sound accents; conversational talk-singing and rhythmic sing-rap with clear articulation in the verses, and a catchy, repetitive hook chorus with stacked harmonies and fun ad-libs. Teasing but affectionate, like someone close joking around with love",
 };
 
 const VOCAL_STYLE: Record<string, string> = {
