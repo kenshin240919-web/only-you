@@ -75,6 +75,39 @@ export async function mailTest(env: CloudflareEnv): Promise<boolean> {
   }
 }
 
+/** 오픈 기념 무료: 반응 영상 기한이 다가오면 주문자에게 알린다(src/lib/reminders.ts). d3 = 약 3일 전, d1 = 하루 전. */
+export async function mailPromoReminder(env: CloudflareEnv, orderId: string, stage: "d3" | "d1", deadline: string): Promise<void> {
+  if (!mailEnabled(env)) return;
+  const o = await orderInfo(orderId);
+  if (!o) return;
+  const site = env.SITE_URL.replace(/\/$/, "");
+  const findUrl = `${site}/find?no=${encodeURIComponent(o.order_no)}`;
+  const title = o.title ?? "맞춤 노래";
+  const due = new Date(deadline).toLocaleString("ko-KR", { timeZone: "Asia/Seoul", month: "long", day: "numeric", hour: "numeric", minute: "2-digit" });
+  const subject = stage === "d1" ? `[Only U song] 내일까지 반응 영상을 보내 주세요 - ${title}` : `[Only U song] 노래는 잘 전하셨나요? - ${title}`;
+  const head = stage === "d1" ? "반응 영상 기한이 하루 남았어요" : "노래는 잘 전하셨나요? 🎁";
+  const lines = [
+    stage === "d1"
+      ? `오픈 기념 무료로 만들어 드린 「${esc(title)}」의 반응 영상 기한이 <strong>${esc(due)}</strong>까지예요.`
+      : `오픈 기념 무료로 만들어 드린 「${esc(title)}」, 받는 분 반응은 어떠셨나요?`,
+    "받는 분이 노래를 처음 듣는 순간을 짧게 영상으로 보내 주시면 <strong>MP3와 가사 카드를 무료로</strong> 열어 드려요. 10초면 충분하고, 얼굴이 안 나와도 괜찮아요.",
+    `<a href="${esc(BUSINESS.kakaoChat)}" style="color:#c9573f">카카오톡 채널 1:1 채팅</a> 또는 <strong>이 메일에 답장</strong>으로 주문번호 <strong>${esc(o.order_no)}</strong>와 함께 보내 주세요.`,
+    `⏰ <strong>${esc(due)}까지</strong> 보내지 않으면 노래 듣기(선물 링크 포함)가 정지돼요.${stage === "d3" ? " 아직 노래를 전하지 않으셨다면 지금 선물 링크를 보내 보세요." : ""}`,
+  ];
+  await send(env, {
+    to: o.email,
+    subject,
+    html: layout(head, lines, { label: "내 노래 열기", href: findUrl }),
+    text: [
+      head,
+      `「${title}」 반응 영상 기한: ${due}`,
+      "받는 분이 노래를 처음 듣는 순간을 영상으로 보내 주시면 MP3와 가사 카드를 무료로 열어 드려요.",
+      `카카오톡 채널(${BUSINESS.kakaoChat}) 또는 이 메일 답장으로 주문번호 ${o.order_no}와 함께 보내 주세요.`,
+      `기한이 지나면 노래 듣기(선물 링크 포함)가 정지돼요. 내 노래: ${findUrl}`,
+    ].join("\n"),
+  });
+}
+
 /** 노래가 완성됐을 때 주문자에게 알린다. 처음 완성과 수정본 완성을 구분해 쓴다. */
 export async function mailSongReady(env: CloudflareEnv, orderId: string, revised: boolean): Promise<void> {
   if (!mailEnabled(env)) return;

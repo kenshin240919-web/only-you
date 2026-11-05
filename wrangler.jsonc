@@ -1,7 +1,10 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "only-you",
-  "main": ".open-next/worker.js",
+  // OpenNext Worker + 매일 Cron(자동 안내 메일). worker.ts 참고.
+  "main": "worker.ts",
+  // 매일 01:00 UTC = 오전 10시(한국 시간).
+  "triggers": { "crons": ["0 1 * * *"] },
   "compatibility_date": "2026-09-01",
   "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
   "assets": {

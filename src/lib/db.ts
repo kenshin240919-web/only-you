@@ -119,6 +119,8 @@ const PURCHASES_SCHEMA = [
   "CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT NOT NULL)",
   // migrations/0011_funnel.sql
   "CREATE TABLE IF NOT EXISTS funnel (day TEXT NOT NULL, step TEXT NOT NULL, n INTEGER NOT NULL, PRIMARY KEY (day, step))",
+  // migrations/0012_reminders.sql
+  "CREATE TABLE IF NOT EXISTS reminders (order_id TEXT NOT NULL, kind TEXT NOT NULL, sent_at TEXT NOT NULL, PRIMARY KEY (order_id, kind))",
   // migrations/0010_song_locks.sql
   "CREATE TABLE IF NOT EXISTS song_locks (order_id TEXT PRIMARY KEY, state TEXT NOT NULL, updated_at TEXT NOT NULL)",
   "CREATE TABLE IF NOT EXISTS promo_claims (campaign TEXT NOT NULL, email TEXT NOT NULL, order_id TEXT NOT NULL, created_at TEXT NOT NULL, PRIMARY KEY (campaign, email))",
