@@ -114,7 +114,7 @@ only-you 저장소 폴더에서 git pull 하고 docs/plans/reels-run.md 전체(�
 ## 배운 점
 - 2026-10-28 1편(엄마) 32초 업로드. 추가 클립3: 세월이 흘러 생일 케이크 옆에서 자녀가 엄마 손을 잡음 / 클립4: 꽃·선물 옆 휴대폰에서 노래가 나오고 엄마 손이 닿음. --audio-start 44.5 그대로(곡 90초라 32초 들어감)
 - Flow: 프롬프트 칸 왼쪽 아래 "에이전트" 버튼을 누르면 에이전트 모드가 켜진다 — 칸 가운데를 누를 것. 다운로드 아이콘은 메뉴 없이 360p 원본을 바로 받는다(파일 이름은 Flow가 정함 → reels/out으로 복사)
-- 크롬 확장 업로드는 파일당 10MB 한도: final.mp4(32초 약 14MB)를 `ffmpeg -i final.mp4 -c:v libx264 -preset slow -crf 26 -c:a copy -movflags +faststart final_up.mp4`(약 5MB)로 줄여 올린다. 원본이 360p라 화질 차이 없음
+- 크롬 확장 업로드는 파일당 10MB 한도: final.mp4(32초 약 14MB)를 `ffmpeg -i final.mp4 -c:v libx264 -preset slow -crf 26 -c:a copy -movflags +faststart final_up.mp4`(약 5MB)로 줄여 올린다. 1 · 2편 압축 전후 비교 SSIM 0.99, PSNR 46~47dB(2026-11-05 측정). 비트레이트는 약 1/3이 된다
 - 작업 중 확장 연결이 끊기면 다시 붙을 때 다른 크롬(사주 irurira1000)에 붙을 수 있다 → 다시 붙으면 인스타 계정부터 확인
 - 틱톡: 업로드 직후 "자동 콘텐츠 검사를 켤까요?"(계정 설정) 창은 취소. "AI 생성 콘텐츠"는 기본 꺼짐 → "펼치기"에서 켬. 게시 직후 '검토 중'일 때는 첫 댓글이 달리지 않는다(입력은 사라지는데 0개) → 검토가 끝난 뒤 다시 단다
 - 2026-11-05 2편(연인) 32초 업로드. 클립 프롬프트 · --audio-start 30.5 그대로, final.mp4 16.5MB → final_up.mp4 5.8MB
